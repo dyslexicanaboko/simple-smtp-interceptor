@@ -1,0 +1,30 @@
+<h1>Intercepted emails</h1>
+
+<p *ngIf="!emails"><em>Loading...</em></p>
+
+<div *ngIf="emails">
+  <button (click)="onClickDeleteAll()">Delete All</button>
+
+  <table class='table'>
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Subject</th>
+        <th>Message</th>
+        <th>Created On UTC</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of emails">
+        <td>{{ e.emailId }}</td>
+        <td>{{ e.from }}</td>
+        <td>{{ e.to }}</td>
+        <td>{{ e.subject }}</td>
+        <td>{{ e.message }}</td>
+        <td>{{ e.createdOnUtc }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
