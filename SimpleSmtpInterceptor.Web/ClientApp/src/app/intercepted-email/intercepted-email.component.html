@@ -4,15 +4,36 @@
 
 <div *ngIf="emails">
   <button (click)="onClickDeleteAll()">Delete All</button>
+  <button (click)="onClickRefresh()">Refresh</button>
+  <fieldset>
+    <legend>Filters</legend>
+    From:
+    <select>
+      <option>All</option>
+      <option *ngFor="let t of distinctFilters.toAddresses" value="{{ t }}">{{ t }}</option>
+    </select>
+    To:
+    <select>
+      <option>All</option>
+      <option *ngFor="let t of distinctFilters.fromAddresses" value="{{ t }}">{{ t }}</option>
+    </select>
 
-  <table class='table'>
+    Subject:
+    <select>
+      <option>All</option>
+      <option *ngFor="let t of distinctFilters.subjects" value="{{ t }}">{{ t }}</option>
+    </select>
+    <button (click)="onClickFilter">Filter</button>
+  </fieldset>
+  <table class="table">
     <thead>
       <tr>
         <th>Id</th>
         <th>From</th>
         <th>To</th>
         <th>Subject</th>
-        <th>Message</th>
+        <th>Message as Text</th>
+        <th>Message as HTML</th>
         <th>Created On UTC</th>
       </tr>
     </thead>
@@ -23,6 +44,7 @@
         <td>{{ e.to }}</td>
         <td>{{ e.subject }}</td>
         <td>{{ e.message }}</td>
+        <td><p [innerHTML]="e.message"></p></td>
         <td>{{ e.createdOnUtc }}</td>
       </tr>
     </tbody>

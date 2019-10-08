@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using SimpleSmtpInterceptor.Data;
-using SimpleSmtpInterceptor.Data.Models;
+using SimpleSmtpInterceptor.Data.Entities;
 
 namespace SimpleSmtpInterceptor.Lib
 {

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SimpleSmtpInterceptor.Data;
-using SimpleSmtpInterceptor.Data.Models;
+using SimpleSmtpInterceptor.Data.Entities;
 
 namespace SimpleSmtpInterceptor.Web.Controllers
 {
