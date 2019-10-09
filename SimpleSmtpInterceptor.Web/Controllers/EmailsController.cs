@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SimpleSmtpInterceptor.Data;
 using SimpleSmtpInterceptor.Data.Entities;
+using SimpleSmtpInterceptor.Data.Models;
 
 namespace SimpleSmtpInterceptor.Web.Controllers
 {
@@ -31,14 +32,34 @@ namespace SimpleSmtpInterceptor.Web.Controllers
         }
 
         // GET: api/Emails/TopN/50
-        [HttpGet("TopN/{top}")]
-        public IEnumerable<Email> GetEmailsTopN([FromRoute] int top)
+        [HttpGet("Filtered/{PageSize}/{ToAddress}/{FromAddress}/{Subject}")]
+        public IEnumerable<Email> GetEmailsFiltered([FromRoute] EmailFilter filter)
         {
-            var q = GetEmails()
-                .Take(top);
+            var f = filter;
+
+            var q = GetEmails();
+
+            if (!string.IsNullOrWhiteSpace(f.ToAddress))
+            {
+                q = q.Where(x => x.To == f.ToAddress);
+            }
+
+            if (!string.IsNullOrWhiteSpace(f.FromAddress))
+            {
+                q = q.Where(x => x.From == f.FromAddress);
+            }
+
+            if (!string.IsNullOrWhiteSpace(f.Subject))
+            {
+                q = q.Where(x => x.Subject == f.Subject);
+            }
+
+            q = q.Take(f.PageSize);
             
             return q;
         }
+
+        //private IEnumerable<Email> 
 
         // GET: api/Emails/5
         [HttpGet("{id}")]

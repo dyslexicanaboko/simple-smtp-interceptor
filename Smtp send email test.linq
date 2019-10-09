@@ -7,13 +7,13 @@
 void Main()
 {
 	//Send a single email
-	//SingleSend("fake@email.com");
+	SingleSend("fake@email.com");
 	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
 	
 	//Send 100+ emails with different subject lines
-	SendSubjectBatchedEmails();
+	//SendSubjectBatchedEmails();
 }
 
 //Send many emails, some with similar subject lines to create a batch feel
@@ -41,8 +41,6 @@ public void SendSubjectBatchedEmails(int emailsToSend = 100)
 	
 	for (int i = 0; i < subjects; i++)
 	{
-		var subject = $@"Subject batch i{i}_r{r.Next()}";
-
 		int distro;
 
 		if (remainingEmails > 0)
@@ -59,7 +57,9 @@ public void SendSubjectBatchedEmails(int emailsToSend = 100)
 			//Then send one email for the remaining subjects
 			distro = 1;
 		}
-		
+
+		var subject = $@"Subject batch i{i}_r{r.Next()}_c{distro}";
+
 		//Each subject will have X number of emails to send
 		dictSubjects.Add(subject, distro);
 	}
@@ -90,9 +90,12 @@ public void SingleSend(string addressTo, string subject = @"This is a test email
 			client.Host = "localhost";
 			
 			mail.Subject = subject;
-			mail.Body = "This is my test email body";
+			mail.Body = "<html><span>This is a test heading</span></html>";
+			mail.IsBodyHtml = true;
 
 			client.Send(mail);
+
+			Console.WriteLine($"{addressTo}, {subject}, {mail.Body}");
 		}
 	}
 }

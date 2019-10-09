@@ -1,9 +1,9 @@
-import { Component, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, Inject } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
-  selector: 'app-intercepted-email',
-  templateUrl: './intercepted-email.component.html'
+  selector: "app-intercepted-email",
+  templateUrl: "./intercepted-email.component.html"
 })
 export class InterceptedEmailComponent {
   emails: IEmail[];
@@ -12,35 +12,58 @@ export class InterceptedEmailComponent {
   baseUrl: string;
   apiEmails: string;
   apiDistinctFilters: string;
+  emailFilter: EmailFilter; //Saved email filter that is being used
 
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
+  constructor(http: HttpClient, @Inject("BASE_URL") baseUrl: string) {
     this.http = http;
     this.baseUrl = baseUrl;
-    this.apiEmails = baseUrl + 'api/Emails/';
-    this.apiDistinctFilters = baseUrl + 'api/DistinctFilters/';
+    this.apiEmails = baseUrl + "api/Emails/";
+    this.apiDistinctFilters = baseUrl + "api/DistinctFilters/";
 
-    this.loadEmails(http, this.apiEmails);
-    this.loadDistinctFilters(http, this.apiDistinctFilters);
+    this.emailFilter = new EmailFilter();
+    this.emailFilter.pageSize = 50;
+
+    //This has to be loaded first
+    this.loadDistinctFilters();
+    this.loadEmails(this.emailFilter);
+
+    console.dir(this.emailFilter);
   }
 
-  loadEmails(http: HttpClient, baseUrl: string) {
-    http
-      .get<IEmail[]>(baseUrl + 'TopN/50')
+  loadEmails(emailFilter: EmailFilter) {
+    const f = emailFilter;
+
+    f.from = this.checkForBlank(f.from);
+    f.to = this.checkForBlank(f.to);
+    f.subject = this.checkForBlank(f.subject);
+
+    this.http
+      .get<IEmail[]>(this.apiEmails + "Filtered/" + f.pageSize + "/" + f.to + "/" + f.from + "/" + f.subject)
       .subscribe(result => {
         this.emails = result;
       }, error => console.error(error));
   }
 
-  loadDistinctFilters(http: HttpClient, baseUrl: string) {
-    http
-      .get<IDistinctFilters>(baseUrl)
+  checkForBlank(target: string) {
+    let str = target;
+
+    if (target === "" || target == undefined) {
+      str = "%20";
+    }
+
+    return str;
+  }
+
+  loadDistinctFilters() {
+    this.http
+      .get<IDistinctFilters>(this.apiDistinctFilters)
       .subscribe(result => {
         this.distinctFilters = result;
       }, error => console.error(error));
   }
 
   onClickRefresh() {
-    this.loadEmails(this.http, this.apiEmails);
+    this.loadEmails(this.emailFilter);
   }
 
   onClickDeleteAll() {
@@ -54,8 +77,10 @@ export class InterceptedEmailComponent {
     }
   }
 
-  onClickFilter() {
+  onClickFilter(emailFilter: EmailFilter) {
+    this.emailFilter = emailFilter;
 
+    this.onClickRefresh();
   }
 }
 
@@ -66,6 +91,13 @@ interface IEmail {
   subject: string;
   message: string;
   createdOnUtc: string;
+}
+
+class EmailFilter {
+  from: string;
+  to: string;
+  subject: string;
+  pageSize: number;
 }
 
 interface IDistinctFilters {
