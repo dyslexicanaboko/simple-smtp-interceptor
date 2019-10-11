@@ -1,38 +1,86 @@
-import { Component, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, Inject } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
-  selector: 'app-intercepted-email',
-  templateUrl: './intercepted-email.component.html'
+  selector: "app-intercepted-email",
+  templateUrl: "./intercepted-email.component.html"
 })
 export class InterceptedEmailComponent {
   emails: IEmail[];
+  distinctFilters: IDistinctFilters;
   http: HttpClient;
   baseUrl: string;
+  apiEmails: string;
+  apiDistinctFilters: string;
+  emailFilter: EmailFilter; //Saved email filter that is being used
 
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
+  constructor(http: HttpClient, @Inject("BASE_URL") baseUrl: string) {
     this.http = http;
-    this.baseUrl = baseUrl + 'api/Emails/';
-    this.getEmails(http, this.baseUrl);
+    this.baseUrl = baseUrl;
+    this.apiEmails = baseUrl + "api/Emails/";
+    this.apiDistinctFilters = baseUrl + "api/DistinctFilters/";
+
+    this.emailFilter = new EmailFilter();
+    this.emailFilter.pageSize = 50;
+
+    //This has to be loaded first
+    this.loadDistinctFilters();
+    this.loadEmails(this.emailFilter);
+
+    console.dir(this.emailFilter);
   }
 
-  getEmails(http: HttpClient, baseUrl: string) {
-    http
-      .get<IEmail[]>(baseUrl + 'TopN/50')
+  loadEmails(emailFilter: EmailFilter) {
+    const f = emailFilter;
+
+    f.from = this.checkForBlank(f.from);
+    f.to = this.checkForBlank(f.to);
+    f.subject = this.checkForBlank(f.subject);
+
+    this.http
+      .get<IEmail[]>(this.apiEmails + "Filtered/" + f.pageSize + "/" + f.to + "/" + f.from + "/" + f.subject)
       .subscribe(result => {
         this.emails = result;
       }, error => console.error(error));
+  }
+
+  checkForBlank(target: string) {
+    let str = target;
+
+    if (target === "" || target == undefined) {
+      str = "%20";
+    }
+
+    return str;
+  }
+
+  loadDistinctFilters() {
+    this.http
+      .get<IDistinctFilters>(this.apiDistinctFilters)
+      .subscribe(result => {
+        this.distinctFilters = result;
+      }, error => console.error(error));
+  }
+
+  onClickRefresh() {
+    this.loadEmails(this.emailFilter);
   }
 
   onClickDeleteAll() {
     //I have to replace this with Angular Material later
     if (confirm("This will delete all email! Are you sure?")) {
       this.http
-        .delete(this.baseUrl + "DeleteAll")
+        .delete(this.apiEmails + "DeleteAll")
         .subscribe(() => console.log("Email table has been truncated"));
 
       this.emails = [];
     }
+  }
+
+  onClickFilter(emailFilter: EmailFilter) {
+    this.emailFilter = emailFilter;
+
+    this.onClickRefresh();
   }
 }
 
@@ -43,4 +91,17 @@ interface IEmail {
   subject: string;
   message: string;
   createdOnUtc: string;
+}
+
+class EmailFilter {
+  from: string;
+  to: string;
+  subject: string;
+  pageSize: number;
+}
+
+interface IDistinctFilters {
+  toAddresses: string[];
+  fromAddresses: string[];
+  subjects: string[];
 }

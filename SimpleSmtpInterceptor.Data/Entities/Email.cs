@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleSmtpInterceptor.Data.Models
+namespace SimpleSmtpInterceptor.Data.Entities
 {
     public class Email
     {

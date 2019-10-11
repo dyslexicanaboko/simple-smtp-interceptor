@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleSmtpInterceptor.Data.Mappings;
-using SimpleSmtpInterceptor.Data.Models;
+using SimpleSmtpInterceptor.Data.Entities;
 
 namespace SimpleSmtpInterceptor.Data
 {

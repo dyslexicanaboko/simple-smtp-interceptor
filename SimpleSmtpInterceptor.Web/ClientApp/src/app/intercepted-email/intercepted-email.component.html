@@ -4,15 +4,40 @@
 
 <div *ngIf="emails">
   <button (click)="onClickDeleteAll()">Delete All</button>
+  <button (click)="onClickRefresh()">Refresh</button>
+  <fieldset>
+    <legend>Filters</legend>
+    Page size:
+    <input type="number" value="50" min="50" max="1000" [(ngModel)]="emailFilter.pageSize" />
 
-  <table class='table'>
+    From:
+    <select [(ngModel)]="emailFilter.to">
+      <option selected="selected" value="%20">All</option>
+      <option *ngFor="let t of distinctFilters.toAddresses" value="{{ t }}">{{ t }}</option>
+    </select>
+
+    To:
+    <select [(ngModel)]="emailFilter.from">
+      <option selected="selected" value="%20">All</option>
+      <option *ngFor="let t of distinctFilters.fromAddresses" value="{{ t }}">{{ t }}</option>
+    </select>
+
+    Subject:
+    <select [(ngModel)]="emailFilter.subject">
+      <option selected="selected" value="%20">All</option>
+      <option *ngFor="let t of distinctFilters.subjects" value="{{ t }}">{{ t }}</option>
+    </select>
+    <button (click)="onClickFilter(emailFilter)">Filter</button>
+  </fieldset>
+  <table class="table">
     <thead>
       <tr>
         <th>Id</th>
         <th>From</th>
         <th>To</th>
         <th>Subject</th>
-        <th>Message</th>
+        <th>Message as Text</th>
+        <th>Message as HTML</th>
         <th>Created On UTC</th>
       </tr>
     </thead>
@@ -23,6 +48,7 @@
         <td>{{ e.to }}</td>
         <td>{{ e.subject }}</td>
         <td>{{ e.message }}</td>
+        <td><p [innerHTML]="e.message"></p></td>
         <td>{{ e.createdOnUtc }}</td>
       </tr>
     </tbody>
