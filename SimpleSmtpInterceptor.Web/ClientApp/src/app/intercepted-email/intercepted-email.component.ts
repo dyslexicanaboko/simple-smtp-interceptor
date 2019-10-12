@@ -13,12 +13,14 @@ export class InterceptedEmailComponent {
   apiEmails: string;
   apiDistinctFilters: string;
   emailFilter: EmailFilter; //Saved email filter that is being used
+  colToggle: ColumnToggle;
 
   constructor(http: HttpClient, @Inject("BASE_URL") baseUrl: string) {
     this.http = http;
     this.baseUrl = baseUrl;
     this.apiEmails = baseUrl + "api/Emails/";
     this.apiDistinctFilters = baseUrl + "api/DistinctFilters/";
+    this.colToggle = new ColumnToggle();
 
     this.emailFilter = new EmailFilter();
     this.emailFilter.pageSize = 50;
@@ -82,6 +84,30 @@ export class InterceptedEmailComponent {
 
     this.onClickRefresh();
   }
+
+  onClickShowAllColumns() {
+    this.colToggle = new ColumnToggle();
+  }
+}
+
+class ColumnToggle {
+  constructor() {
+    this.id = true;
+    this.from = true;
+    this.to = true;
+    this.subject = true;
+    this.messageText = true;
+    this.messageHtml = true;
+    this.createdOnUtc = true;
+  }
+
+  id: boolean;
+  from: boolean;
+  to: boolean;
+  subject: boolean;
+  messageText: boolean;
+  messageHtml: boolean;
+  createdOnUtc: boolean;
 }
 
 interface IEmail {

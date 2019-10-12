@@ -1,4 +1,4 @@
-<h1>Intercepted emails</h1>
+<h2>Intercepted emails</h2>
 
 <p *ngIf="!emails"><em>Loading...</em></p>
 
@@ -29,27 +29,40 @@
     </select>
     <button (click)="onClickFilter(emailFilter)">Filter</button>
   </fieldset>
+  <br />
+  <fieldset>
+    <legend>Hide Columns</legend>
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.id" /> Id&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.from" /> From&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.to" /> To&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.subject" /> Subject&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.messageText" /> Message as Text&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.messageHtml" /> Message as HTML&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.createdOnUtc" /> Created On UTC&nbsp;
+    <button (click)="onClickShowAllColumns()">Reset</button>
+  </fieldset>
+  <br />
   <table class="table">
     <thead>
       <tr>
-        <th>Id</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Subject</th>
-        <th>Message as Text</th>
-        <th>Message as HTML</th>
-        <th>Created On UTC</th>
+        <th *ngIf="colToggle.id">Id</th>
+        <th *ngIf="colToggle.from">From</th>
+        <th *ngIf="colToggle.to">To</th>
+        <th *ngIf="colToggle.subject">Subject</th>
+        <th *ngIf="colToggle.messageText">Message as Text</th>
+        <th *ngIf="colToggle.messageHtml">Message as HTML</th>
+        <th *ngIf="colToggle.createdOnUtc">Created On UTC</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let e of emails">
-        <td>{{ e.emailId }}</td>
-        <td>{{ e.from }}</td>
-        <td>{{ e.to }}</td>
-        <td>{{ e.subject }}</td>
-        <td>{{ e.message }}</td>
-        <td><p [innerHTML]="e.message"></p></td>
-        <td>{{ e.createdOnUtc }}</td>
+        <td *ngIf="colToggle.id">{{ e.emailId }}</td>
+        <td *ngIf="colToggle.from">{{ e.from }}</td>
+        <td *ngIf="colToggle.to">{{ e.to }}</td>
+        <td *ngIf="colToggle.subject">{{ e.subject }}</td>
+        <td *ngIf="colToggle.messageText">{{ e.message }}</td>
+        <td *ngIf="colToggle.messageHtml"><p [innerHTML]="e.message"></p></td>
+        <td *ngIf="colToggle.createdOnUtc">{{ e.createdOnUtc }}</td>
       </tr>
     </tbody>
   </table>
