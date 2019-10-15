@@ -13,13 +13,13 @@
     From:
     <select [(ngModel)]="emailFilter.from">
       <option selected="selected" value="%20">All</option>
-      <option *ngFor="let t of distinctFilters.toAddresses" value="{{ t }}">{{ t }}</option>
+      <option *ngFor="let t of distinctFilters.fromAddresses" value="{{ t }}">{{ t }}</option>
     </select>
 
     To:
     <select [(ngModel)]="emailFilter.to">
       <option selected="selected" value="%20">All</option>
-      <option *ngFor="let t of distinctFilters.fromAddresses" value="{{ t }}">{{ t }}</option>
+      <option *ngFor="let t of distinctFilters.toAddresses" value="{{ t }}">{{ t }}</option>
     </select>
 
     Subject:
