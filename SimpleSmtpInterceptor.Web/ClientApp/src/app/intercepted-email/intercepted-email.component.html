@@ -11,13 +11,13 @@
     <input type="number" value="50" min="50" max="1000" [(ngModel)]="emailFilter.pageSize" />
 
     From:
-    <select [(ngModel)]="emailFilter.to">
+    <select [(ngModel)]="emailFilter.from">
       <option selected="selected" value="%20">All</option>
       <option *ngFor="let t of distinctFilters.toAddresses" value="{{ t }}">{{ t }}</option>
     </select>
 
     To:
-    <select [(ngModel)]="emailFilter.from">
+    <select [(ngModel)]="emailFilter.to">
       <option selected="selected" value="%20">All</option>
       <option *ngFor="let t of distinctFilters.fromAddresses" value="{{ t }}">{{ t }}</option>
     </select>
