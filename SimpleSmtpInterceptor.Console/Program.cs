@@ -11,14 +11,9 @@ namespace SimpleSmtpInterceptor.ConsoleApp
 
         public static void Main(string[] args)
         {
-            //Console.WriteLine("Hello?");
-            //Console.Read();
-
             BuildConfigs();
 
             SmtpServer();
-
-            //ConfigTest();
         }
 
         private static void SmtpServer()
@@ -39,19 +34,6 @@ namespace SimpleSmtpInterceptor.ConsoleApp
             _listenOnLoopBack = Convert.ToBoolean(configuration["ListenOnLoopback"]);
 
             Console.WriteLine($"ListenOnLoopback: {_listenOnLoopBack}");
-        }
-
-        private static void ConfigTest()
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-            var configuration = builder.Build();
-
-            Console.WriteLine(configuration.GetConnectionString("SimpleSmtpInterceptor"));
-
-            Console.Read();
         }
     }
 }

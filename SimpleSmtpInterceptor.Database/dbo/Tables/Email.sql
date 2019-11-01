@@ -1,10 +1,10 @@
 ﻿CREATE TABLE [dbo].[Email] (
-    [EmailId]      BIGINT         IDENTITY (1, 1) NOT NULL,
-    [From]         VARCHAR (1000) NOT NULL,
-    [To]           VARCHAR (1000) NOT NULL,
-    [Subject]      VARCHAR (78)   NOT NULL,
-    [Message]      NVARCHAR (MAX) NOT NULL,
-    [CreatedOnUtc] DATETIME2 (7)  DEFAULT [DF_dbo.Email_CreateOnUtc] (getutcdate()) NOT NULL,
+    [EmailId]      bigint         IDENTITY (1, 1) NOT NULL,
+    [From]         varchar (1000) NOT NULL,
+    [To]           varchar (1000) NOT NULL,
+    [Subject]      varchar (78)   NOT NULL,
+    [Message]      nvarchar (MAX) NOT NULL,
+    [CreatedOnUtc] datetime2 (7)  CONSTRAINT [DF_dbo.Email_CreatedOnUtc] DEFAULT (getutcdate()) NOT NULL,
     CONSTRAINT [PK_dbo.Email_EmailId] PRIMARY KEY CLUSTERED ([EmailId] ASC)
 );
 

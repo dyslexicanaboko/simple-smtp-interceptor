@@ -64,5 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Email.sql" />
+    <Build Include="dbo\Tables\Log.sql" />
   </ItemGroup>
 </Project>

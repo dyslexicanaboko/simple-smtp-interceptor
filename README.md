@@ -8,7 +8,10 @@ I was really tired of trying to find an SMTP development friendly server that I 
 Microsoft developers or anyone willing to figure out how to set it up. This project is the bare minimum so that I could take it and go. I got it to the point where it would work to do just one thing and that is capture email.
 
 ### My UI is terrible
-I still have to update the UI - however you can bypass the UI and just hit the database instead. Or build your own UI that's way better than mine. The UI is built using a stock Angular 4 template so it is already outdated. I will worry more about this later (11/17/2018).
+I still have to update the UI - however you can bypass the UI and just hit the database instead. Or build your own UI that's way better than mine. The UI is built using a stock Angular 5 template so it is already outdated. I will worry more about this later (11/17/2018).
+
+#### 10/14/2019 Update
+I adjusted the stock UI to be a little more friendly to use. It's still hideous, but slightly more functional.
 
 # How do I get started?
 I tried making this as simple as possible, which also means this project isn't feature packed. 
@@ -63,7 +66,7 @@ Improvements that I have made are:
 1. Saves all incoming emails to the `dbo.Email` table as is
 
 ### SimpleSmtpInterceptor.Web
-- Incredibly basic Angular 4 (yeah it's outdated because of the template that comes with VS 2017...) site that connects to the same data layer to display captured emails from the `dbo.Email` table.
+- Incredibly basic Angular 5 (yeah it's outdated because of the template that comes with VS 2017...) site that connects to the same data layer to display captured emails from the `dbo.Email` table.
 - Button for purging all email
 
 Just host this site in IIS and you are ready to go.
@@ -108,7 +111,8 @@ If you double click on nssm.exe it will tell you everything you can do. Addition
 ### Smtp send email test.linq
 This is test code I am providing so that you can test out the server with dummy emails. I wrote it with [LINQPad](https://www.linqpad.net/), but you can just as easily copy the code into VS to run it if you want. However it's easier to just use LINQPad in my opinion.
 
-There are two methods for running a test:
+These are the available test methods:
 1. SingleSend - use this for testing your setup otherwise you could run into some issues with a bunch of bounced emails on your local.
    1. This is incredibly annoying to deal with, especially if you have Norton AntiVirus installed which will tell you about every single email that has failed to send in a separate pop up window. You have been warned.
 1. ParallelSend - after you have setup your console or windows service properly, you can use this for testing a lot of email at once.
+1. SendSubjectBatchedEmails - send a multitude of emails with random subject lines to have some variety in what is being sent/received.
