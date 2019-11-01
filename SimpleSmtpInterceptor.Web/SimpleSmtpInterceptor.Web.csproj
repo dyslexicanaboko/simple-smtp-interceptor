@@ -28,6 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp Angular 2 back up with modules.rar" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SimpleSmtpInterceptor.Data\SimpleSmtpInterceptor.Data.csproj" />
   </ItemGroup>
 

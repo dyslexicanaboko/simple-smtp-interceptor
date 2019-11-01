@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SimpleSmtpInterceptor.Data;
 
 namespace SimpleSmtpInterceptor.Data.Migrations
 {
     [DbContext(typeof(InterceptorModel))]
-    partial class InterceptorModelModelSnapshot : ModelSnapshot
+    [Migration("20191101001815_AddedLogging")]
+    partial class AddedLogging
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

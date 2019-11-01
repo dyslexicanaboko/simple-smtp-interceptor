@@ -15,6 +15,7 @@ namespace SimpleSmtpInterceptor.Data
         }
 
         public virtual DbSet<Email> Emails { get; set; }
+        public virtual DbSet<Log> Logs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -29,6 +30,7 @@ namespace SimpleSmtpInterceptor.Data
             var m = modelBuilder;
 
             m.ApplyConfiguration(new EmailMap());
+            m.ApplyConfiguration(new LogMap());
         }
     }
 }

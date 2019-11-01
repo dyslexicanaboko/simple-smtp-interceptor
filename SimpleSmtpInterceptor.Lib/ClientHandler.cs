@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using SimpleSmtpInterceptor.Data;
@@ -22,25 +23,31 @@ namespace SimpleSmtpInterceptor.Lib
 
         private readonly bool _verboseOutput;
 
+        private readonly InterceptorModel _context;
+
         public ClientHandler(TcpClient client, bool verboseOutput)
         {
             _client = client;
 
             _verboseOutput = verboseOutput;
+
+            _context = new InterceptorModelFactory().CreateDbContext(null);
         }
 
         public void HandleRequest()
         {
-            using (var _stream = _client.GetStream())
-            {
-                using (var _writer = new StreamWriter(_stream))
-                {
-                    _writer.NewLine = "\r\n";
-                    _writer.AutoFlush = true;
+            Email email = null;
 
-                    using (var _reader = new StreamReader(_stream))
+            using (var stream = _client.GetStream())
+            {
+                using (var writer = new StreamWriter(stream))
+                {
+                    writer.NewLine = "\r\n";
+                    writer.AutoFlush = true;
+
+                    using (var _reader = new StreamReader(stream))
                     {
-                        _writer.WriteLine("220 localhost -- Fake proxy server");
+                        writer.WriteLine("220 localhost -- Fake proxy server");
 
                         try
                         {
@@ -56,7 +63,7 @@ namespace SimpleSmtpInterceptor.Lib
                                 switch (line)
                                 {
                                     case "DATA":
-                                        _writer.WriteLine("354 Start input, end data with <CRLF>.<CRLF>");
+                                        writer.WriteLine("354 Start input, end data with <CRLF>.<CRLF>");
 
                                         var data = new StringBuilder();
                                         var subject = string.Empty;
@@ -110,7 +117,7 @@ namespace SimpleSmtpInterceptor.Lib
 
                                         var message = data.ToString();
 
-                                        var email = new Email
+                                        email = new Email
                                         {
                                             From = from,
                                             To = to,
@@ -121,28 +128,32 @@ namespace SimpleSmtpInterceptor.Lib
 
                                         WriteMessage(email, contentType, contentTransferEncoding);
 
-                                        _writer.WriteLine("250 OK");
+                                        writer.WriteLine("250 OK");
                                         break;
 
                                     case "QUIT":
-                                        _writer.WriteLine("250 OK");
+                                        writer.WriteLine("250 OK");
 
                                         keepReading = false;
                                         break;
 
                                     default:
-                                        _writer.WriteLine("250 OK");
+                                        writer.WriteLine("250 OK");
                                         break;
                                 }
                             }
                         }
-                        catch (IOException)
+                        catch (IOException ioe)
                         {
                             Console.WriteLine("Connection lost.");
+
+                            LogError(ioe, email);
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine(ex);
+
+                            LogError(ex, email);
                         }
                     }
                 }
@@ -198,15 +209,52 @@ namespace SimpleSmtpInterceptor.Lib
 
         private void SaveEmail(Email email)
         {
-            using (var context = new InterceptorModelFactory().CreateDbContext(null))
+            _context.Emails.Add(email);
+            _context.SaveChanges();
+        }
+
+        private void LogError(Exception exception, Email email)
+        {
+            var log = new Log();
+
+            log.Message = "Ex: " + exception.GetType().Name + " ExMsg: " + exception.Message;
+
+            log.Exception = exception.ToString();
+
+            log.Level = @"Error";
+
+            if (email != null)
             {
-                context.Add(email);
-                context.SaveChanges();
+                log.Properties = SerializeAsJson(email);
+            }
+
+            _context.Logs.Add(log);
+            _context.SaveChanges();
+        }
+
+        private string SerializeAsJson(object target)
+        {
+            var js = new DataContractJsonSerializer(target.GetType());
+
+            using (var ms = new MemoryStream())
+            {
+                js.WriteObject(ms, target);
+
+                ms.Position = 0;
+
+                using (var sr = new StreamReader(ms))
+                {
+                    var json = sr.ReadToEnd();
+
+                    return json;
+                }
             }
         }
 
         public void Dispose()
         {
+            _context?.Dispose();
+
             if(_client == null) return;
 
             _client.Close();
