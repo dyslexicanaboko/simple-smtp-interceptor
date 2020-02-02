@@ -1,5 +1,6 @@
 ﻿using SimpleSmtpInterceptor.Data.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using SimpleSmtpInterceptor.Data.Entities;
 
@@ -119,6 +120,11 @@ namespace SimpleSmtpInterceptor.Lib
         public EmailHeader GetHeader()
         {
             return ParsedEmail.Header;
+        }
+
+        public List<EmailAttachment> GetAttachments()
+        {
+            return ParsedEmail.Attachments;
         }
     }
 }

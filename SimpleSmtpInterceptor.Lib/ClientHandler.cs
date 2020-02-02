@@ -6,6 +6,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace SimpleSmtpInterceptor.Lib
 {
@@ -23,13 +24,6 @@ namespace SimpleSmtpInterceptor.Lib
             _client = client;
 
             _verboseOutput = verboseOutput;
-
-            if (verboseOutput)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Verbose output is ON");
-                Console.ResetColor();
-            }
 
             _context = new InterceptorModelFactory().CreateDbContext(null);
 
@@ -76,6 +70,19 @@ namespace SimpleSmtpInterceptor.Lib
                                         email = parser.GetEmail();
 
                                         var header = parser.GetHeader();
+
+                                        var attachments = parser.GetAttachments();
+
+                                        email.AttachmentCount = attachments.Count;
+
+                                        if (attachments.Any())
+                                        {
+                                            var svc = new AttachmentCompressor(attachments);
+
+                                            var rawFile = svc.SaveAsZipArchive(Path.GetRandomFileName());
+
+                                            email.AttachmentArchive = rawFile.Contents;
+                                        }
 
                                         WriteMessage(header, email);
 
@@ -177,6 +184,10 @@ namespace SimpleSmtpInterceptor.Lib
             {
                 log.Properties = SerializeAsJson(email);
             }
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(log.Exception);
+            Console.ResetColor();
 
             _context.Logs.Add(log);
             _context.SaveChanges();

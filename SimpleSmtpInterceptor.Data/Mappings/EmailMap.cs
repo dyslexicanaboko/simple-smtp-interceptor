@@ -36,6 +36,12 @@ namespace SimpleSmtpInterceptor.Data.Mappings
 
             b.Property(x => x.HeaderJson);
 
+            b.Property(x => x.AttachmentCount)
+                .HasDefaultValueSql("0")
+                .IsRequired();
+
+            b.Property(x => x.AttachmentArchive);
+
             b.Property(e => e.CreatedOnUtc)
                 .HasColumnType("datetime2")
                 .HasDefaultValueSql("getutcdate()")
