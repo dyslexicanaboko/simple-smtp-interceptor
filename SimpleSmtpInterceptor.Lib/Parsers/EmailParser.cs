@@ -85,8 +85,6 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                     {
                         parser = new EmailOnlyParser(reader, verboseOutput);
                     }
-
-                    parser.ParsedEmail.Header = obj;
                 }
 				else if (line.StartsWith(Headers.ContentTransferEncoding))
 				{
@@ -99,6 +97,10 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
                 line = reader.ReadLine();
             }
+
+            if(parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
+
+            parser.ParsedEmail.Header = obj;
 
             return parser;
         }

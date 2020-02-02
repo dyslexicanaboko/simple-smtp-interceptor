@@ -3,7 +3,7 @@
 	[From]         varchar (1000) NOT NULL,
 	[To]           varchar (1000) NOT NULL,
 	[Subject]      varchar (78)   NOT NULL,
-	[Message]      nvarchar (MAX) NOT NULL,
+	[Message]      nvarchar (MAX) NULL,
 	[HeaderJson]   nvarchar (MAX) NULL CONSTRAINT [CHK_dbo.Email_HeaderJson] CHECK (ISJSON(HeaderJson) = 1),
 	[AttachmentCount] int NOT NULL CONSTRAINT [DF_dbo.Email_AttachmentCount] DEFAULT (0),
 	[AttachmentArchive] varbinary(8000) NULL,

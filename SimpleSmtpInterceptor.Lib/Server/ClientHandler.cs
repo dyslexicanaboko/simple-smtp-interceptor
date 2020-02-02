@@ -106,14 +106,15 @@ namespace SimpleSmtpInterceptor.Lib.Server
                         }
                         catch (IOException ioe)
                         {
+                            Console.BackgroundColor = ConsoleColor.Yellow;
+                            Console.ForegroundColor = ConsoleColor.Black;
                             Console.WriteLine("Connection lost.");
+                            Console.ResetColor();
 
                             LogError(ioe, email);
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex);
-
                             LogError(ex, email);
                         }
                     }
@@ -157,12 +158,16 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
         private void WriteMessage(EmailHeader header, Email email)
         {
-            if (header.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
+            var isMessageNull = email.Message == null;
+
+            if (!isMessageNull && header.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
             {
                 email.Message = DecodeQuotedPrintable(email.Message);
             }
 
-            Console.WriteLine($"sent to -> {email.To} : Message length: {email.Message.Length:n0}");
+            var str = isMessageNull ? string.Empty : email.Message;
+
+            Console.WriteLine($"sent to -> {email.To} : Message length: {str.Length:n0}");
         }
 
         private void SaveEmail(Email email)
@@ -173,6 +178,10 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
         private void LogError(Exception exception, Email email = null)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(exception.ToString());
+            Console.ResetColor();
+
             var log = new Log();
 
             log.Message = "Ex: " + exception.GetType().Name + " ExMsg: " + exception.Message;
@@ -185,10 +194,6 @@ namespace SimpleSmtpInterceptor.Lib.Server
             {
                 log.Properties = SerializeAsJson(email);
             }
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(log.Exception);
-            Console.ResetColor();
 
             _context.Logs.Add(log);
             _context.SaveChanges();
