@@ -1,10 +1,10 @@
-﻿using SimpleSmtpInterceptor.Data.Models;
+﻿using SimpleSmtpInterceptor.Data.Entities;
+using SimpleSmtpInterceptor.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using SimpleSmtpInterceptor.Data.Entities;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Parsers
 {
     public abstract class EmailParser
         : CommonBase

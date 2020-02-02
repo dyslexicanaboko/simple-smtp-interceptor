@@ -1,14 +1,15 @@
-﻿using SimpleSmtpInterceptor.Data;
+﻿using Microsoft.EntityFrameworkCore.Internal;
+using SimpleSmtpInterceptor.Data;
 using SimpleSmtpInterceptor.Data.Entities;
 using SimpleSmtpInterceptor.Data.Models;
+using SimpleSmtpInterceptor.Lib.Parsers;
 using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore.Internal;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Server
 {
     public class ClientHandler 
         : CommonBase, IDisposable

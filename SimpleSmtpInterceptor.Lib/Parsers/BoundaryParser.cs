@@ -1,10 +1,10 @@
-﻿using SimpleSmtpInterceptor.Data.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using SimpleSmtpInterceptor.Data.Models;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Parsers
 {
     public class BoundaryParser
         : EmailParser

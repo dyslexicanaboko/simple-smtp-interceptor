@@ -7,8 +7,11 @@
 void Main()
 {
 	//Send a single email
-	SingleSend("fake@email.com");
-	
+	//SingleSend("fake@email.com");
+
+	//Send a single email null message
+	SingleSend(new Email { Message = null } );
+
 	//Send a single email with three attachments
 	//SingleSend("fakeWithAttachments@email.com", @"This is a test email", true);
 	
@@ -80,25 +83,36 @@ public void SendSubjectBatchedEmails(int emailsToSend = 100)
 	});
 }
 
+public void SingleSend(string addressTo, string subject = Email.StockSubject)
+{
+	var obj = new Email
+	{
+		To = addressTo,
+		Subject = subject
+	};
+	
+	SingleSend(obj);
+}
+
 // Boiler plate send method simplified to TO address and optional subject
-public void SingleSend(string addressTo, string subject = @"This is a test email", bool includeTestAttachment = false)
+public void SingleSend(Email email)
 {
 	using (var client = new SmtpClient())
 	{
-		using (var mail = new MailMessage("linqPadTest@local.com", addressTo))
+		using (var mail = new MailMessage(email.From, email.To))
 		{
 			client.Port = 25;
 			client.DeliveryMethod = SmtpDeliveryMethod.Network;
 			client.UseDefaultCredentials = false;
 			client.Host = "localhost";
 			
-			mail.Subject = subject;
-			mail.Body = "<html><span>This is a test heading</span></html>";
+			mail.Subject = email.Subject;
+			mail.Body = email.Message;
 			mail.IsBodyHtml = true;
 
 			string strAttachments = null;
 
-			if (includeTestAttachment)
+			if (email.IncludeTestAttachment)
 			{
 				var lst = GetTestAttachments();
 
@@ -115,9 +129,9 @@ public void SingleSend(string addressTo, string subject = @"This is a test email
 
 			client.Send(mail);
 
-			Console.WriteLine($"{addressTo}, {subject}, {mail.Body}");
+			Console.WriteLine($"{email.To}, {email.Subject}, {mail.Body}");
 
-			if (includeTestAttachment)
+			if (email.IncludeTestAttachment)
 			{
 				Console.WriteLine($"Attachments:\n{strAttachments}");
 			}
@@ -153,4 +167,19 @@ public List<Attachment> GetTestAttachments()
 	}
 	
 	return lst;
+}
+
+public class Email
+{
+	public const string StockSubject = "This is a test email";
+	
+	public string From { get; set; } = @"linqPadTest@local.com";
+
+	public string To { get; set; } = @"whatever@email.com";
+
+	public string Subject { get; set; } = StockSubject;
+
+	public string Message { get; set; } = @"<html><span>This is a test heading</span></html>";
+	
+	public bool IncludeTestAttachment { get; set; }
 }

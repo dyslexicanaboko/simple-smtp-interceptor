@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using SimpleSmtpInterceptor.Lib;
+using SimpleSmtpInterceptor.Lib.Server;
 using System;
 using System.IO;
 using System.Linq;

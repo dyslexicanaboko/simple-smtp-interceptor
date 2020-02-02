@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Parsers
 {
     public class EmailOnlyParser
         : EmailParser
