@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Server
 {
     public class FakeSmtpServer
     {

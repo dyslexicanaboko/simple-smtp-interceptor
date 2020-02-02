@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Server
 {
     /* All credit for the basis of this code goes to the author "Al Forno" of this comment on Code-Project
      * https://www.codeproject.com/Tips/286952/create-a-simple-smtp-server-in-csharp?msg=4363652#xx4363652xx
