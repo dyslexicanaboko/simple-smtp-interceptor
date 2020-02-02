@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Json;
@@ -33,7 +34,16 @@ namespace SimpleSmtpInterceptor.Lib
 
             _verboseOutput = verboseOutput;
 
+            if (verboseOutput)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Verbose output is ON");
+                Console.ResetColor();
+            }
+
             _context = new InterceptorModelFactory().CreateDbContext(null);
+
+            Console.WriteLine();
         }
 
         public void HandleRequest()
@@ -57,10 +67,7 @@ namespace SimpleSmtpInterceptor.Lib
 
                             while (keepReading)
                             {
-                                var line = reader.ReadLine();
-
-                                if (_verboseOutput)
-                                    Console.Error.WriteLine("Read line {0}", line);
+                                var line = ReadNextLine(reader);
 
                                 switch (line)
                                 {
@@ -119,11 +126,20 @@ namespace SimpleSmtpInterceptor.Lib
             }
         }
 
+        private string ReadNextLine(TextReader reader)
+        {
+            var line = reader.ReadLine();
+
+            if(_verboseOutput) Console.WriteLine(line);
+
+            return line;
+        }
+
         private EmailHeader ExtractHeaderInformation(TextReader reader)
         {
             var obj = new EmailHeader();
 
-            var line = reader.ReadLine();
+            var line = ReadNextLine(reader);
 
             while (line != null && line != ".")
             {
@@ -160,7 +176,7 @@ namespace SimpleSmtpInterceptor.Lib
                     break;
                 }
 
-                line = reader.ReadLine();
+                line = ReadNextLine(reader);
             }
 
             return obj;
@@ -168,7 +184,7 @@ namespace SimpleSmtpInterceptor.Lib
 
         private string ExtractBody(TextReader reader)
         {
-            var line = reader.ReadLine();
+            var line = ReadNextLine(reader);
 
             var sb = new StringBuilder();
 
@@ -176,7 +192,7 @@ namespace SimpleSmtpInterceptor.Lib
             {
                 sb.Append(line);
 
-                line = reader.ReadLine();
+                line = ReadNextLine(reader);
             }
 
             var body = sb.ToString();

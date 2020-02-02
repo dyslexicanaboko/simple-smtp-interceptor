@@ -18,7 +18,8 @@ namespace SimpleSmtpInterceptor.ConsoleApp
 
         private static void SmtpServer()
         {
-            var server = new FakeSmtpServer(_listenOnLoopBack);
+            //var server = new FakeSmtpServer(_listenOnLoopBack);
+            var server = new FakeSmtpServer(_listenOnLoopBack, 25, true);
 
             server.Start();
         }
@@ -33,7 +34,10 @@ namespace SimpleSmtpInterceptor.ConsoleApp
 
             _listenOnLoopBack = Convert.ToBoolean(configuration["ListenOnLoopback"]);
 
-            Console.WriteLine($"ListenOnLoopback: {_listenOnLoopBack}");
+            Console.Write($"ListenOnLoopback : ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(_listenOnLoopBack);
+            Console.ResetColor();
         }
     }
 }

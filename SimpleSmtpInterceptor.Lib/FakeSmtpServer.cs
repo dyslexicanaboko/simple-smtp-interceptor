@@ -16,16 +16,33 @@ namespace SimpleSmtpInterceptor.Lib
 
         public void Start()
         {
-            Console.WriteLine($"Fake SMTP Server started @ {DateTime.Now}");
-
+            PrintMessage(@"started");
+            
             _listener.StartListening();
         }
 
         public void Stop()
         {
-            Console.WriteLine($"Fake SMTP Server stopped @ {DateTime.Now}");
+            PrintMessage(@"stopped");
 
             _listener.StopListening();
+        }
+
+        private void PrintMessage(string operatingWord)
+        {
+            var dtm = DateTime.Now;
+
+            var tz = TimeZoneInfo.Local;
+
+            var strTimeZone = tz.IsDaylightSavingTime(dtm) ? tz.DaylightName : tz.StandardName;
+
+            Console.Write($"\nFake SMTP Server {operatingWord} @ ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(" " + strTimeZone);
+            Console.WriteLine();
+            Console.ResetColor();
         }
     }
 }

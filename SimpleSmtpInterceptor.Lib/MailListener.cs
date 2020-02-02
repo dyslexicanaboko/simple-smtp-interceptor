@@ -15,8 +15,8 @@ namespace SimpleSmtpInterceptor.Lib
 
         private readonly bool _verboseOutput;
 
-        public MailListener(IPAddress localaddr, int port, bool verboseOutput)
-            : base(localaddr, port)
+        public MailListener(IPAddress localAddress, int port, bool verboseOutput)
+            : base(localAddress, port)
         {
             _verboseOutput = verboseOutput;
         }
