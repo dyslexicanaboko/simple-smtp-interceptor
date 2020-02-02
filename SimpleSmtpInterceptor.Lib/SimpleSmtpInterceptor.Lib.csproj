@@ -10,6 +10,7 @@
     <Authors>Eli Hayon</Authors>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <FileVersion>1.1.0.0</FileVersion>
+	<Product>Simple SMTP Interceptor</Product>
   </PropertyGroup>
 
   <ItemGroup>

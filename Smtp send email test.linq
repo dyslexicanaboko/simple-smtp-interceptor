@@ -7,10 +7,10 @@
 void Main()
 {
 	//Send a single email
-	//SingleSend("fake@email.com");
+	SingleSend("fake@email.com");
 	
 	//Send a single email with three attachments
-	SingleSend("fakeWithAttachments@email.com", @"This is a test email", true);
+	//SingleSend("fakeWithAttachments@email.com", @"This is a test email", true);
 	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
