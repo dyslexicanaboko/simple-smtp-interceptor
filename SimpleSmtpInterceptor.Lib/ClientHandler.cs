@@ -6,21 +6,23 @@ using System.Text;
 using System.Text.RegularExpressions;
 using SimpleSmtpInterceptor.Data;
 using SimpleSmtpInterceptor.Data.Entities;
+using SimpleSmtpInterceptor.Data.Models;
 
 namespace SimpleSmtpInterceptor.Lib
 {
     public class ClientHandler 
         : IDisposable
     {
-        private readonly TcpClient _client;
         private const string Subject = "Subject: ";
         private const string From = "From: ";
         private const string To = "To: ";
-        //private const string MimeVersion = "MIME-Version: ";
-        //private const string Date = "Date: ";
+        private const string MimeVersion = "MIME-Version: ";
+        private const string Date = "Date: ";
         private const string ContentType = "Content-Type: ";
         private const string ContentTransferEncoding = "Content-Transfer-Encoding: ";
 
+        private readonly TcpClient _client;
+        
         private readonly bool _verboseOutput;
 
         private readonly InterceptorModel _context;
@@ -45,7 +47,7 @@ namespace SimpleSmtpInterceptor.Lib
                     writer.NewLine = "\r\n";
                     writer.AutoFlush = true;
 
-                    using (var _reader = new StreamReader(stream))
+                    using (var reader = new StreamReader(stream))
                     {
                         writer.WriteLine("220 localhost -- Fake proxy server");
 
@@ -55,7 +57,7 @@ namespace SimpleSmtpInterceptor.Lib
 
                             while (keepReading)
                             {
-                                var line = _reader.ReadLine();
+                                var line = reader.ReadLine();
 
                                 if (_verboseOutput)
                                     Console.Error.WriteLine("Read line {0}", line);
@@ -65,68 +67,25 @@ namespace SimpleSmtpInterceptor.Lib
                                     case "DATA":
                                         writer.WriteLine("354 Start input, end data with <CRLF>.<CRLF>");
 
-                                        var data = new StringBuilder();
-                                        var subject = string.Empty;
-                                        var from = string.Empty;
-                                        var to = string.Empty;
-                                        //var mimeVersion = string.Empty;
-                                        //var date = string.Empty;
-                                        var contentType = string.Empty;
-                                        var contentTransferEncoding = string.Empty;
+                                        //Read everything up to the blank line
+                                        var header = ExtractHeaderInformation(reader);
 
-                                        line = _reader.ReadLine();
-
-                                        while (line != null && line != ".")
-                                        {
-                                            if (line.StartsWith(Subject))
-                                            {
-                                                subject = line.Substring(Subject.Length);
-                                            }
-                                            else if (line.StartsWith(From))
-                                            {
-                                                from = line.Substring(From.Length);
-                                            }
-                                            else if (line.StartsWith(To))
-                                            {
-                                                to = line.Substring(To.Length);
-                                            }
-                                            //else if (line.StartsWith(MimeVersion))
-                                            //{
-                                            //    mimeVersion = line.Substring(MimeVersion.Length);
-                                            //}
-                                            //else if (line.StartsWith(Date))
-                                            //{
-                                            //    date = line.Substring(Date.Length);
-                                            //}
-                                            else if (line.StartsWith(ContentType))
-                                            {
-                                                contentType = line.Substring(ContentType.Length);
-                                            }
-                                            else if (line.StartsWith(ContentTransferEncoding))
-                                            {
-                                                contentTransferEncoding =
-                                                    line.Substring(ContentTransferEncoding.Length);
-                                            }
-                                            else
-                                            {
-                                                data.AppendLine(line);
-                                            }
-
-                                            line = _reader.ReadLine();
-                                        }
-
-                                        var message = data.ToString();
+                                        //Everything after the blank line is the message body
+                                        var message = ExtractBody(reader);
 
                                         email = new Email
                                         {
-                                            From = from,
-                                            To = to,
-                                            Subject = subject,
+                                            From = header.From,
+                                            To = header.To,
+                                            Subject = header.Subject,
                                             Message = message,
+                                            HeaderJson = SerializeAsJson(header),
                                             CreatedOnUtc = DateTime.UtcNow
                                         };
 
-                                        WriteMessage(email, contentType, contentTransferEncoding);
+                                        WriteMessage(header, email);
+
+                                        SaveEmail(email);
 
                                         writer.WriteLine("250 OK");
                                         break;
@@ -160,6 +119,71 @@ namespace SimpleSmtpInterceptor.Lib
             }
         }
 
+        private EmailHeader ExtractHeaderInformation(TextReader reader)
+        {
+            var obj = new EmailHeader();
+
+            var line = reader.ReadLine();
+
+            while (line != null && line != ".")
+            {
+                if (line.StartsWith(Subject))
+                {
+                    obj.Subject = line.Substring(Subject.Length);
+                }
+                else if (line.StartsWith(From))
+                {
+                    obj.From = line.Substring(From.Length);
+                }
+                else if (line.StartsWith(To))
+                {
+                    obj.To = line.Substring(To.Length);
+                }
+                else if (line.StartsWith(MimeVersion))
+                {
+                    obj.MimeVersion = line.Substring(MimeVersion.Length);
+                }
+                else if (line.StartsWith(Date))
+                {
+                    obj.Date = line.Substring(Date.Length);
+                }
+                else if (line.StartsWith(ContentType))
+                {
+                    obj.ContentType = line.Substring(ContentType.Length);
+                }
+                else if (line.StartsWith(ContentTransferEncoding))
+                {
+                    obj.ContentTransferEncoding = line.Substring(ContentTransferEncoding.Length);
+                }
+                else if(line == string.Empty)
+                {
+                    break;
+                }
+
+                line = reader.ReadLine();
+            }
+
+            return obj;
+        }
+
+        private string ExtractBody(TextReader reader)
+        {
+            var line = reader.ReadLine();
+
+            var sb = new StringBuilder();
+
+            while (line != null && line != ".")
+            {
+                sb.Append(line);
+
+                line = reader.ReadLine();
+            }
+
+            var body = sb.ToString();
+
+            return body;
+        }
+
         private string DecodeQuotedPrintable(string input)
         {
             var occurences = new Regex(@"(=[0-9A-Z][0-9A-Z])+", RegexOptions.Multiline);
@@ -183,28 +207,14 @@ namespace SimpleSmtpInterceptor.Lib
             return input.Replace("=\r\n", string.Empty);
         }
 
-        private void WriteMessage(Email email, string contentType, string transferEncoding)
+        private void WriteMessage(EmailHeader header, Email email)
         {
-            if (transferEncoding == "quoted-printable")
+            if (header.ContentTransferEncoding == "quoted-printable")
             {
                 email.Message = DecodeQuotedPrintable(email.Message);
             }
 
             Console.WriteLine($"sent to -> {email.To}");
-
-            SaveEmail(email);
-
-            //Console.Error.WriteLine("===============================================================================");
-            //Console.Error.WriteLine("Received ­email");
-            //Console.Error.WriteLine("Type: " + contentType);
-            //Console.Error.WriteLine("Encoding: " + transferEncoding);
-            //Console.Error.WriteLine("From: " + from);
-            //Console.Error.WriteLine("To: " + to);
-            //Console.Error.WriteLine("Subject: " + subject);
-            //Console.Error.WriteLine("-------------------------------------------------------------------------------");
-            //Console.Error.WriteLine(message);
-            //Console.Error.WriteLine("===============================================================================");
-            //Console.Error.WriteLine(string.Empty);
         }
 
         private void SaveEmail(Email email)
@@ -213,7 +223,7 @@ namespace SimpleSmtpInterceptor.Lib
             _context.SaveChanges();
         }
 
-        private void LogError(Exception exception, Email email)
+        private void LogError(Exception exception, Email email = null)
         {
             var log = new Log();
 

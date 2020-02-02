@@ -14,6 +14,8 @@ namespace SimpleSmtpInterceptor.Data.Entities
 
         public string Message { get; set; }
 
+        public string HeaderJson { get; set; }
+
         public DateTime CreatedOnUtc { get; set; }
     }
 }

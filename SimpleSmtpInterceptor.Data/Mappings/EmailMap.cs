@@ -34,6 +34,8 @@ namespace SimpleSmtpInterceptor.Data.Mappings
             b.Property(x => x.Message)
                 .IsRequired();
 
+            b.Property(x => x.HeaderJson);
+
             b.Property(e => e.CreatedOnUtc)
                 .HasColumnType("datetime2")
                 .HasDefaultValueSql("getutcdate()")
