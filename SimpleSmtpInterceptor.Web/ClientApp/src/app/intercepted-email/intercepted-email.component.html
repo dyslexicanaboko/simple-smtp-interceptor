@@ -1,7 +1,16 @@
 <h2>Intercepted emails</h2>
 
 <p *ngIf="!emails"><em>Loading...</em></p>
+<div *ngIf="serverErrors" style="color: red;">
+  <ul>
+    <li>An error occurred while loading.</li>
+    <li>Tip: Check your connection string - make sure this application has access to the database.</li>
+    <li>Below is the returned error:</li>
+  </ul>
+  <br />
+  {{ serverErrorMessage }}<br />
 
+</div>
 <div *ngIf="emails">
   <button (click)="onClickDeleteAll()">Delete All</button>
   <button (click)="onClickRefresh()">Refresh</button>
@@ -38,6 +47,7 @@
     <input type="checkbox" checked="checked" [(ngModel)]="colToggle.subject" /> Subject&nbsp;
     <input type="checkbox" checked="checked" [(ngModel)]="colToggle.messageText" /> Message as Text&nbsp;
     <input type="checkbox" checked="checked" [(ngModel)]="colToggle.messageHtml" /> Message as HTML&nbsp;
+    <input type="checkbox" checked="checked" [(ngModel)]="colToggle.attachmentCount" /> Attachments Count&nbsp;
     <input type="checkbox" checked="checked" [(ngModel)]="colToggle.createdOnUtc" /> Created On UTC&nbsp;
     <button (click)="onClickShowAllColumns()">Reset</button>
   </fieldset>
@@ -51,6 +61,7 @@
         <th *ngIf="colToggle.subject">Subject</th>
         <th *ngIf="colToggle.messageText">Message as Text</th>
         <th *ngIf="colToggle.messageHtml">Message as HTML</th>
+        <th *ngIf="colToggle.attachmentCount">Attachments</th>
         <th *ngIf="colToggle.createdOnUtc">Created On UTC</th>
       </tr>
     </thead>
@@ -62,6 +73,7 @@
         <td *ngIf="colToggle.subject">{{ e.subject }}</td>
         <td *ngIf="colToggle.messageText">{{ e.message }}</td>
         <td *ngIf="colToggle.messageHtml"><p [innerHTML]="e.message"></p></td>
+        <td *ngIf="colToggle.attachmentCount">{{ e.attachmentCount }}</td>
         <td *ngIf="colToggle.createdOnUtc">{{ e.createdOnUtc }}</td>
       </tr>
     </tbody>
