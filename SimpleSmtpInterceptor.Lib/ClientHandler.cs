@@ -149,7 +149,7 @@ namespace SimpleSmtpInterceptor.Lib
 
         private void WriteMessage(EmailHeader header, Email email)
         {
-            if (header.ContentTransferEncoding == "quoted-printable")
+            if (header.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
             {
                 email.Message = DecodeQuotedPrintable(email.Message);
             }
