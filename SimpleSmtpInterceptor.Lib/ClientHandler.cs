@@ -1,27 +1,17 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Net.Sockets;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Text.RegularExpressions;
-using SimpleSmtpInterceptor.Data;
+﻿using SimpleSmtpInterceptor.Data;
 using SimpleSmtpInterceptor.Data.Entities;
 using SimpleSmtpInterceptor.Data.Models;
+using System;
+using System.IO;
+using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SimpleSmtpInterceptor.Lib
 {
     public class ClientHandler 
-        : IDisposable
+        : CommonBase, IDisposable
     {
-        private const string Subject = "Subject: ";
-        private const string From = "From: ";
-        private const string To = "To: ";
-        private const string MimeVersion = "MIME-Version: ";
-        private const string Date = "Date: ";
-        private const string ContentType = "Content-Type: ";
-        private const string ContentTransferEncoding = "Content-Transfer-Encoding: ";
-
         private readonly TcpClient _client;
         
         private readonly bool _verboseOutput;
@@ -74,21 +64,18 @@ namespace SimpleSmtpInterceptor.Lib
                                     case "DATA":
                                         writer.WriteLine("354 Start input, end data with <CRLF>.<CRLF>");
 
-                                        //Read everything up to the blank line
-                                        var header = ExtractHeaderInformation(reader);
+                                        var parser = EmailParser.GetEmailParser(reader, _verboseOutput);
 
-                                        //Everything after the blank line is the message body
-                                        var message = ExtractBody(reader);
-
-                                        email = new Email
+                                        if (parser == null)
                                         {
-                                            From = header.From,
-                                            To = header.To,
-                                            Subject = header.Subject,
-                                            Message = message,
-                                            HeaderJson = SerializeAsJson(header),
-                                            CreatedOnUtc = DateTime.UtcNow
-                                        };
+                                            throw new Exception("Parser was returned as null somehow... 0x202002020103");
+                                        }
+
+                                        parser.ParseBody();
+
+                                        email = parser.GetEmail();
+
+                                        var header = parser.GetHeader();
 
                                         WriteMessage(header, email);
 
@@ -135,85 +122,22 @@ namespace SimpleSmtpInterceptor.Lib
             return line;
         }
 
-        private EmailHeader ExtractHeaderInformation(TextReader reader)
+        private static string DecodeQuotedPrintable(string input)
         {
-            var obj = new EmailHeader();
+            var occurrences = new Regex(@"(=[0-9A-Z][0-9A-Z])+", RegexOptions.Multiline);
 
-            var line = ReadNextLine(reader);
-
-            while (line != null && line != ".")
-            {
-                if (line.StartsWith(Subject))
-                {
-                    obj.Subject = line.Substring(Subject.Length);
-                }
-                else if (line.StartsWith(From))
-                {
-                    obj.From = line.Substring(From.Length);
-                }
-                else if (line.StartsWith(To))
-                {
-                    obj.To = line.Substring(To.Length);
-                }
-                else if (line.StartsWith(MimeVersion))
-                {
-                    obj.MimeVersion = line.Substring(MimeVersion.Length);
-                }
-                else if (line.StartsWith(Date))
-                {
-                    obj.Date = line.Substring(Date.Length);
-                }
-                else if (line.StartsWith(ContentType))
-                {
-                    obj.ContentType = line.Substring(ContentType.Length);
-                }
-                else if (line.StartsWith(ContentTransferEncoding))
-                {
-                    obj.ContentTransferEncoding = line.Substring(ContentTransferEncoding.Length);
-                }
-                else if(line == string.Empty)
-                {
-                    break;
-                }
-
-                line = ReadNextLine(reader);
-            }
-
-            return obj;
-        }
-
-        private string ExtractBody(TextReader reader)
-        {
-            var line = ReadNextLine(reader);
-
-            var sb = new StringBuilder();
-
-            while (line != null && line != ".")
-            {
-                sb.Append(line);
-
-                line = ReadNextLine(reader);
-            }
-
-            var body = sb.ToString();
-
-            return body;
-        }
-
-        private string DecodeQuotedPrintable(string input)
-        {
-            var occurences = new Regex(@"(=[0-9A-Z][0-9A-Z])+", RegexOptions.Multiline);
-
-            var matches = occurences.Matches(input);
+            var matches = occurrences.Matches(input);
 
             foreach (Match m in matches)
             {
-                byte[] bytes = new byte[m.Value.Length / 3];
+                var bytes = new byte[m.Value.Length / 3];
 
-                for (int i = 0; i < bytes.Length; i++)
+                for (var i = 0; i < bytes.Length; i++)
                 {
-                    string hex = m.Value.Substring(i * 3 + 1, 2);
-                    int iHex = Convert.ToInt32(hex, 16);
+                    var hex = m.Value.Substring(i * 3 + 1, 2);
+
+                    var iHex = Convert.ToInt32(hex, 16);
+
                     bytes[i] = Convert.ToByte(iHex);
                 }
 
@@ -230,7 +154,7 @@ namespace SimpleSmtpInterceptor.Lib
                 email.Message = DecodeQuotedPrintable(email.Message);
             }
 
-            Console.WriteLine($"sent to -> {email.To}");
+            Console.WriteLine($"sent to -> {email.To} : Message length: {email.Message.Length:n0}");
         }
 
         private void SaveEmail(Email email)
@@ -256,25 +180,6 @@ namespace SimpleSmtpInterceptor.Lib
 
             _context.Logs.Add(log);
             _context.SaveChanges();
-        }
-
-        private string SerializeAsJson(object target)
-        {
-            var js = new DataContractJsonSerializer(target.GetType());
-
-            using (var ms = new MemoryStream())
-            {
-                js.WriteObject(ms, target);
-
-                ms.Position = 0;
-
-                using (var sr = new StreamReader(ms))
-                {
-                    var json = sr.ReadToEnd();
-
-                    return json;
-                }
-            }
         }
 
         public void Dispose()
