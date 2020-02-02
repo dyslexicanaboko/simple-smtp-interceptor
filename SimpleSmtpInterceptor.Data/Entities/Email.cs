@@ -14,6 +14,12 @@ namespace SimpleSmtpInterceptor.Data.Entities
 
         public string Message { get; set; }
 
+        public string HeaderJson { get; set; }
+
         public DateTime CreatedOnUtc { get; set; }
+
+        public int AttachmentCount { get; set; }
+
+        public byte[] AttachmentArchive { get; set; }
     }
 }

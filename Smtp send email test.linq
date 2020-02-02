@@ -9,6 +9,9 @@ void Main()
 	//Send a single email
 	SingleSend("fake@email.com");
 	
+	//Send a single email with three attachments
+	//SingleSend("fakeWithAttachments@email.com", @"This is a test email", true);
+	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
 	
@@ -78,7 +81,7 @@ public void SendSubjectBatchedEmails(int emailsToSend = 100)
 }
 
 // Boiler plate send method simplified to TO address and optional subject
-public void SingleSend(string addressTo, string subject = @"This is a test email")
+public void SingleSend(string addressTo, string subject = @"This is a test email", bool includeTestAttachment = false)
 {
 	using (var client = new SmtpClient())
 	{
@@ -93,9 +96,31 @@ public void SingleSend(string addressTo, string subject = @"This is a test email
 			mail.Body = "<html><span>This is a test heading</span></html>";
 			mail.IsBodyHtml = true;
 
+			string strAttachments = null;
+
+			if (includeTestAttachment)
+			{
+				var lst = GetTestAttachments();
+
+				var sb = new StringBuilder();
+
+				lst.ForEach(x => { 
+					mail.Attachments.Add(x);
+					
+					sb.Append("\t\t").Append(x.Name).AppendLine();
+				});
+				
+				strAttachments = sb.ToString();
+			}
+
 			client.Send(mail);
 
 			Console.WriteLine($"{addressTo}, {subject}, {mail.Body}");
+
+			if (includeTestAttachment)
+			{
+				Console.WriteLine($"Attachments:\n{strAttachments}");
+			}
 		}
 	}
 }
@@ -110,4 +135,22 @@ public void SingleSend(int taskNumber)
 public void ParallelSend(int numberOfTasks)
 {
 	Parallel.For(0, numberOfTasks, SingleSend);	
+}
+
+public List<Attachment> GetTestAttachments()
+{
+	var lst = new List<Attachment>(3);
+	
+	var path = Path.GetDirectoryName(Util.CurrentQueryPath);
+	
+	for (int i = 1; i <= lst.Capacity; i++)
+	{
+		var filePath = Path.Combine(path, $"TestEmailAttachment0{i}.txt");
+		
+		var a = new Attachment(filePath, @"text/plain");
+		
+		lst.Add(a);
+	}
+	
+	return lst;
 }

@@ -12,6 +12,14 @@
     <!-- Set this to true if you enable server-side prerendering -->
     <BuildServerSideRenderer>false</BuildServerSideRenderer>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+	<Product>Simple SMTP Interceptor Web Portal</Product>
+    <PackageProjectUrl>http://obscureproblemsandgotchas.com/dyslexicapps/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dyslexicanaboko/simple-smtp-interceptor</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageLicenseUrl>https://github.com/dyslexicanaboko/simple-smtp-interceptor/blob/master/LICENSE</PackageLicenseUrl>
+    <Authors>Eli Hayon</Authors>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
