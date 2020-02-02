@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using SimpleSmtpInterceptor.Data;
 
 namespace SimpleSmtpInterceptor.ConsoleApp
 {
@@ -43,6 +44,8 @@ namespace SimpleSmtpInterceptor.ConsoleApp
 
             _verboseOutput = Convert.ToBoolean(configuration["VerboseOutput"]);
 
+            var cs = InterceptorModelFactory.LoadConnectionString();
+
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("===================================");
             Console.WriteLine("appsettings.json");
@@ -52,6 +55,7 @@ namespace SimpleSmtpInterceptor.ConsoleApp
             PrintProperty("Listen on loop back", _listenOnLoopBack);
             PrintProperty("Listen on port     ", _port);
             PrintProperty("Verbose output     ", _listenOnLoopBack);
+            PrintProperty("Connection string  ", cs);
         }
 
         private static void PrintProperty(string key, object value)
