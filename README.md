@@ -92,8 +92,13 @@ Just a word of warning - the version I have up on git is for Windows 10, the NSS
 Because I used NSSM first and it worked - so why change what works?
 
 #### How do I use this project as a windows service?
-1. Compile the Console project
-1. Copy the binaries to a installation location
+1. Publish the Console project using the following settings:
+   1. Configuration   : Release | Any CPU
+   1. Target Framework: netcoreapp2.1
+   1. Deployment Mode : Self-contained //I have not had any luck with portable
+   1. Target Runtime  : win-x64 //This is up to you
+   1. Target location : bin\Release\netcoreapp2.1\publish\ //default value is fine
+1. Copy the binaries in the publish folder to a installation location. No need to copy the "runtimes" folder.
 1. Copy the contents of the `Windows service` folder to the same installation location
 1. Edit the `run.bat` to point to where `SimpleSmtpInterceptor.ConsoleApp.dll` is located
 1. Run the `install.bat` so that `nssm.exe` runs
