@@ -13,7 +13,7 @@ void Main()
 	SingleSend(new Email { Message = null } );
 
 	//Send a single email with three attachments
-	//SingleSend("fakeWithAttachments@email.com", @"This is a test email", true);
+	SingleSend(new Email { From = "fakeWithAttachments@email.com", IncludeTestAttachment = true} );
 	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
