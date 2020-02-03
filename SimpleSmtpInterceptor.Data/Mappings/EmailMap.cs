@@ -31,8 +31,15 @@ namespace SimpleSmtpInterceptor.Data.Mappings
                 .HasMaxLength(78) //RFC 2822
                 .IsRequired();
 
-            b.Property(x => x.Message)
+            b.Property(x => x.Message);
+
+            b.Property(x => x.HeaderJson);
+
+            b.Property(x => x.AttachmentCount)
+                .HasDefaultValueSql("0")
                 .IsRequired();
+
+            b.Property(x => x.AttachmentArchive);
 
             b.Property(e => e.CreatedOnUtc)
                 .HasColumnType("datetime2")

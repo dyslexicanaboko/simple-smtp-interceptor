@@ -14,6 +14,8 @@ export class InterceptedEmailComponent {
   apiDistinctFilters: string;
   emailFilter: EmailFilter; //Saved email filter that is being used
   colToggle: ColumnToggle;
+  serverErrors: boolean;
+  serverErrorMessage: string;
 
   constructor(http: HttpClient, @Inject("BASE_URL") baseUrl: string) {
     this.http = http;
@@ -43,7 +45,7 @@ export class InterceptedEmailComponent {
       .get<IEmail[]>(this.apiEmails + "Filtered/" + f.pageSize + "/" + f.to + "/" + f.from + "/" + f.subject)
       .subscribe(result => {
         this.emails = result;
-      }, error => console.error(error));
+      }, error => this.handleError(error));
   }
 
   checkForBlank(target: string) {
@@ -61,7 +63,18 @@ export class InterceptedEmailComponent {
       .get<IDistinctFilters>(this.apiDistinctFilters)
       .subscribe(result => {
         this.distinctFilters = result;
-      }, error => console.error(error));
+      }, error => this.handleError(error));
+  }
+
+  handleError(error: any) {
+    this.serverErrors = true;
+
+    let msg = (error.message) ? error.message :
+      error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+
+    this.serverErrorMessage = msg;
+
+    console.error(error);
   }
 
   onClickRefresh() {
@@ -92,12 +105,13 @@ export class InterceptedEmailComponent {
 
 class ColumnToggle {
   constructor() {
-    this.id = true;
+    this.id = false;
     this.from = true;
     this.to = true;
     this.subject = true;
-    this.messageText = true;
+    this.messageText = false;
     this.messageHtml = true;
+    this.attachmentCount = false;
     this.createdOnUtc = true;
   }
 
@@ -107,6 +121,7 @@ class ColumnToggle {
   subject: boolean;
   messageText: boolean;
   messageHtml: boolean;
+  attachmentCount: boolean;
   createdOnUtc: boolean;
 }
 
@@ -116,6 +131,7 @@ interface IEmail {
   to: string;
   subject: string;
   message: string;
+  attachmentCount: number;
   createdOnUtc: string;
 }
 

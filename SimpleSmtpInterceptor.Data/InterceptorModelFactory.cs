@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.IO;
 
 namespace SimpleSmtpInterceptor.Data
@@ -31,7 +32,7 @@ namespace SimpleSmtpInterceptor.Data
             return new InterceptorModel(optionsBuilder.Options);
         }
 
-        private static string LoadConnectionString()
+        public static string LoadConnectionString()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -45,8 +46,12 @@ namespace SimpleSmtpInterceptor.Data
             {
                 connectionString = configuration.GetConnectionString("SimpleSmtpInterceptor");
             }
-            catch
+            catch(Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("WARNING: An exception was thrown when attempting to get the connection string. A backup connection string was used. 0x202002021418\n" + ex.ToString());
+                Console.ResetColor();
+
                 //11/01/2018
                 //I hate that I have to do this, but it's Microsoft's fault that this isn't working yet
                 //An exception is thrown when running migrations or running scaffolding

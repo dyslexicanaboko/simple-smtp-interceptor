@@ -7,7 +7,13 @@
 void Main()
 {
 	//Send a single email
-	SingleSend("fake@email.com");
+	//SingleSend("fake@email.com");
+
+	//Send a single email null message
+	SingleSend(new Email { Message = null } );
+
+	//Send a single email with three attachments
+	SingleSend(new Email { From = "fakeWithAttachments@email.com", IncludeTestAttachment = true} );
 	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
@@ -77,25 +83,58 @@ public void SendSubjectBatchedEmails(int emailsToSend = 100)
 	});
 }
 
+public void SingleSend(string addressTo, string subject = Email.StockSubject)
+{
+	var obj = new Email
+	{
+		To = addressTo,
+		Subject = subject
+	};
+	
+	SingleSend(obj);
+}
+
 // Boiler plate send method simplified to TO address and optional subject
-public void SingleSend(string addressTo, string subject = @"This is a test email")
+public void SingleSend(Email email)
 {
 	using (var client = new SmtpClient())
 	{
-		using (var mail = new MailMessage("linqPadTest@local.com", addressTo))
+		using (var mail = new MailMessage(email.From, email.To))
 		{
 			client.Port = 25;
 			client.DeliveryMethod = SmtpDeliveryMethod.Network;
 			client.UseDefaultCredentials = false;
 			client.Host = "localhost";
 			
-			mail.Subject = subject;
-			mail.Body = "<html><span>This is a test heading</span></html>";
+			mail.Subject = email.Subject;
+			mail.Body = email.Message;
 			mail.IsBodyHtml = true;
+
+			string strAttachments = null;
+
+			if (email.IncludeTestAttachment)
+			{
+				var lst = GetTestAttachments();
+
+				var sb = new StringBuilder();
+
+				lst.ForEach(x => { 
+					mail.Attachments.Add(x);
+					
+					sb.Append("\t\t").Append(x.Name).AppendLine();
+				});
+				
+				strAttachments = sb.ToString();
+			}
 
 			client.Send(mail);
 
-			Console.WriteLine($"{addressTo}, {subject}, {mail.Body}");
+			Console.WriteLine($"{email.To}, {email.Subject}, {mail.Body}");
+
+			if (email.IncludeTestAttachment)
+			{
+				Console.WriteLine($"Attachments:\n{strAttachments}");
+			}
 		}
 	}
 }
@@ -110,4 +149,37 @@ public void SingleSend(int taskNumber)
 public void ParallelSend(int numberOfTasks)
 {
 	Parallel.For(0, numberOfTasks, SingleSend);	
+}
+
+public List<Attachment> GetTestAttachments()
+{
+	var lst = new List<Attachment>(3);
+	
+	var path = Path.GetDirectoryName(Util.CurrentQueryPath);
+	
+	for (int i = 1; i <= lst.Capacity; i++)
+	{
+		var filePath = Path.Combine(path, $"TestEmailAttachment0{i}.txt");
+		
+		var a = new Attachment(filePath, @"text/plain");
+		
+		lst.Add(a);
+	}
+	
+	return lst;
+}
+
+public class Email
+{
+	public const string StockSubject = "This is a test email";
+	
+	public string From { get; set; } = @"linqPadTest@local.com";
+
+	public string To { get; set; } = @"whatever@email.com";
+
+	public string Subject { get; set; } = StockSubject;
+
+	public string Message { get; set; } = @"<html><span>This is a test heading</span></html>";
+	
+	public bool IncludeTestAttachment { get; set; }
 }

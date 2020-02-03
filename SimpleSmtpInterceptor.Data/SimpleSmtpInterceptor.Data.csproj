@@ -4,6 +4,14 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RuntimeFrameworkVersion>2.1</RuntimeFrameworkVersion>
     <GenerateRuntimeConfigurationFiles>True</GenerateRuntimeConfigurationFiles>
+	<Product>Simple SMTP Interceptor</Product>
+    <PackageProjectUrl>http://obscureproblemsandgotchas.com/dyslexicapps/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dyslexicanaboko/simple-smtp-interceptor</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageLicenseUrl>https://github.com/dyslexicanaboko/simple-smtp-interceptor/blob/master/LICENSE</PackageLicenseUrl>
+    <Authors>Eli Hayon</Authors>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
