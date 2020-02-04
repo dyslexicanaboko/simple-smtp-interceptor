@@ -167,7 +167,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
             var str = isMessageNull ? string.Empty : email.Message;
 
-            Console.WriteLine($"sent to -> {email.To} : Message length: {str.Length:n0}");
+            Console.WriteLine($"sent to -> {email.To}\n\tMessage length: {str.Length:n0}\n\tAttachments: {email.AttachmentCount}");
         }
 
         private void SaveEmail(Email email)
@@ -195,8 +195,11 @@ namespace SimpleSmtpInterceptor.Lib.Server
                 log.Properties = SerializeAsJson(email);
             }
 
-            _context.Logs.Add(log);
-            _context.SaveChanges();
+            using (var context = new InterceptorModelFactory().CreateDbContext(null))
+            {
+                context.Logs.Add(log);
+                context.SaveChanges();
+            }
         }
 
         public void Dispose()
