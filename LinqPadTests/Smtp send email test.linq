@@ -1,6 +1,8 @@
 <Query Kind="Program">
+  <Reference>&lt;RuntimeDirectory&gt;\System.Web.dll</Reference>
   <Namespace>System.Net.Mail</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
+  <Namespace>System.Web</Namespace>
 </Query>
 
 //Open with LinqPad https://www.linqpad.net/
@@ -10,10 +12,12 @@ void Main()
 	//SingleSend("fake@email.com");
 
 	//Send a single email null message
-	SingleSend(new Email { Message = null } );
+	//SingleSend(new Email { Message = null } );
 
 	//Send a single email with three attachments
-	SingleSend(new Email { From = "fakeWithAttachments@email.com", IncludeTestAttachment = true} );
+	SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText });
+	//SingleSend(new Email { From = "imageFiles@email.com", Attachments = FilesImage });
+	//SingleSend(new Email { From = "largeFile@email.com", Attachments = FilesLarge } );
 	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
@@ -21,6 +25,27 @@ void Main()
 	//Send 100+ emails with different subject lines
 	//SendSubjectBatchedEmails();
 }
+
+private static readonly string[] FilesText = new string[] 
+{
+	"TestEmailAttachment01.txt",
+	"TestEmailAttachment02.txt",
+	"TestEmailAttachment03.txt"
+};
+
+private static readonly string[] FilesImage = new string[]
+{
+	"TestEmailAttachment01.jpg",
+	"TestEmailAttachment02.bmp",
+	"TestEmailAttachment03.gif",
+	"TestEmailAttachment04.png",
+	"01-31-2020 13-45-13.jpg"
+};
+
+private static readonly string[] FilesLarge = new string[]
+{
+	"LargeGarbageFile.dat"
+};
 
 //Send many emails, some with similar subject lines to create a batch feel
 //This is to exercise a variety in emails being sent
@@ -112,9 +137,11 @@ public void SingleSend(Email email)
 
 			string strAttachments = null;
 
-			if (email.IncludeTestAttachment)
+			var hasAttachments = email.Attachments != null && email.Attachments.Any();
+
+			if (hasAttachments)
 			{
-				var lst = GetTestAttachments();
+				var lst = GetAttachments(email.Attachments);
 
 				var sb = new StringBuilder();
 
@@ -131,7 +158,7 @@ public void SingleSend(Email email)
 
 			Console.WriteLine($"{email.To}, {email.Subject}, {mail.Body}");
 
-			if (email.IncludeTestAttachment)
+			if (hasAttachments)
 			{
 				Console.WriteLine($"Attachments:\n{strAttachments}");
 			}
@@ -151,17 +178,19 @@ public void ParallelSend(int numberOfTasks)
 	Parallel.For(0, numberOfTasks, SingleSend);	
 }
 
-public List<Attachment> GetTestAttachments()
+public List<Attachment> GetAttachments(string[] fileNames)
 {
-	var lst = new List<Attachment>(3);
+	var lst = new List<Attachment>(fileNames.Length);
 	
 	var path = Path.GetDirectoryName(Util.CurrentQueryPath);
 	
-	for (int i = 1; i <= lst.Capacity; i++)
+	foreach (var file in fileNames)
 	{
-		var filePath = Path.Combine(path, $"TestEmailAttachment0{i}.txt");
+		var filePath = Path.Combine(path, file);
 		
-		var a = new Attachment(filePath, @"text/plain");
+		string mimeType = MimeMapping.GetMimeMapping(file);
+		
+		var a = new Attachment(filePath, mimeType);
 		
 		lst.Add(a);
 	}
@@ -181,5 +210,5 @@ public class Email
 
 	public string Message { get; set; } = @"<html><span>This is a test heading</span></html>";
 	
-	public bool IncludeTestAttachment { get; set; }
+	public string[] Attachments { get; set; }
 }

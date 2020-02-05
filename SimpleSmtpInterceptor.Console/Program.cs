@@ -54,7 +54,7 @@ namespace SimpleSmtpInterceptor.ConsoleApp
 
             PrintProperty("Listen on loop back", _listenOnLoopBack);
             PrintProperty("Listen on port     ", _port);
-            PrintProperty("Verbose output     ", _listenOnLoopBack);
+            PrintProperty("Verbose output     ", _verboseOutput);
             PrintProperty("Connection string  ", cs);
         }
 
