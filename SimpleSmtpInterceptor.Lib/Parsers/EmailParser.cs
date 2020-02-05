@@ -16,20 +16,27 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 		private readonly bool _verboseOutput;
 
 		protected string GetNextLine()
-		{
-			var line = Reader.ReadLine();
+        {
+            var line = ReadNextLine();
 
 			while (line == string.Empty)
 			{
-				if(_verboseOutput) Console.WriteLine(line);
-
-				line = Reader.ReadLine();
+                line = ReadNextLine();
 			}
 
 			return line;
 		}
 
-		protected EmailParser(TextReader reader, bool verboseOutput)
+        private string ReadNextLine()
+        {
+            var line = Reader.ReadLine();
+
+            if(_verboseOutput) Console.WriteLine(line);
+
+            return line;
+        }
+
+        protected EmailParser(TextReader reader, bool verboseOutput)
 		{
 			Reader = reader;
 

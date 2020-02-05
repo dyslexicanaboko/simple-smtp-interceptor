@@ -4,6 +4,7 @@ using System.Net;
 namespace SimpleSmtpInterceptor.Lib.Server
 {
     public class FakeSmtpServer
+        : CommonBase
     {
         private readonly MailListener _listener;
 
@@ -30,19 +31,12 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
         private void PrintMessage(string operatingWord)
         {
-            var dtm = DateTime.Now;
-
-            var tz = TimeZoneInfo.Local;
-
-            var strTimeZone = tz.IsDaylightSavingTime(dtm) ? tz.DaylightName : tz.StandardName;
-
             Console.Write($"\nFake SMTP Server {operatingWord} @ ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(" " + strTimeZone);
+
+            PrintTimeStamp();
+
             Console.WriteLine();
-            Console.ResetColor();
+            Console.WriteLine();
         }
     }
 }

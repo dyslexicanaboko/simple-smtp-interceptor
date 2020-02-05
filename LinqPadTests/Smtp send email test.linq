@@ -15,9 +15,9 @@ void Main()
 	//SingleSend(new Email { Message = null } );
 
 	//Send a single email with three attachments
-	//SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText });
-	SingleSend(new Email { From = "imageFiles@email.com", Attachments = FilesImage });
-//	SingleSend(new Email { From = "largeFile@email.com", Attachments = FilesLarge } );
+	SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText });
+	//SingleSend(new Email { From = "imageFiles@email.com", Attachments = FilesImage });
+	//SingleSend(new Email { From = "largeFile@email.com", Attachments = FilesLarge } );
 	
 	//Send 100 emails in parallel
 	//ParallelSend(100);
@@ -38,7 +38,8 @@ private static readonly string[] FilesImage = new string[]
 	"TestEmailAttachment01.jpg",
 	"TestEmailAttachment02.bmp",
 	"TestEmailAttachment03.gif",
-	"TestEmailAttachment04.png"
+	"TestEmailAttachment04.png",
+	"01-31-2020 13-45-13.jpg"
 };
 
 private static readonly string[] FilesLarge = new string[]

@@ -6,7 +6,7 @@
 	[Message]      nvarchar (MAX) NULL,
 	[HeaderJson]   nvarchar (MAX) NULL CONSTRAINT [CHK_dbo.Email_HeaderJson] CHECK (ISJSON(HeaderJson) = 1),
 	[AttachmentCount] int NOT NULL CONSTRAINT [DF_dbo.Email_AttachmentCount] DEFAULT (0),
-	[AttachmentArchive] varbinary(8000) NULL,
+	[AttachmentArchive] varbinary(MAX) NULL,
 	[CreatedOnUtc] datetime2 (7)  CONSTRAINT [DF_dbo.Email_CreatedOnUtc] DEFAULT (getutcdate()) NOT NULL,
 	CONSTRAINT [PK_dbo.Email_EmailId] PRIMARY KEY CLUSTERED ([EmailId] ASC)
 );

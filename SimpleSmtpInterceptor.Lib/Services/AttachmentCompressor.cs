@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
-namespace SimpleSmtpInterceptor.Lib
+namespace SimpleSmtpInterceptor.Lib.Services
 {
     public class AttachmentCompressor
     {
@@ -60,7 +60,11 @@ namespace SimpleSmtpInterceptor.Lib
             }
 
             //Archive everything into a zip file in the temp path
-            ZipFile.CreateFromDirectory(path, zipFilePath);
+            ZipFile.CreateFromDirectory(
+                path, 
+                zipFilePath, 
+                CompressionLevel.Optimal, 
+                false);
 
             //Create a byte array from the zip file
             obj.Contents = File.ReadAllBytes(zipFilePath);

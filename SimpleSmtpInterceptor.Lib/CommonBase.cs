@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.Serialization.Json;
 
 namespace SimpleSmtpInterceptor.Lib
@@ -22,6 +23,21 @@ namespace SimpleSmtpInterceptor.Lib
                     return json;
                 }
             }
+        }
+
+        protected void PrintTimeStamp()
+        {
+            var dtm = DateTime.Now;
+
+            var tz = TimeZoneInfo.Local;
+
+            var strTimeZone = tz.IsDaylightSavingTime(dtm) ? tz.DaylightName : tz.StandardName;
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(" " + strTimeZone);
+            Console.ResetColor();
         }
     }
 }

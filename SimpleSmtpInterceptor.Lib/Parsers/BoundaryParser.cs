@@ -24,7 +24,8 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
             _boundaryClose = _boundaryOpen + "--";
 
-            _attachmentName = new Regex("Content-Type: .+; name=(.+)");
+            //In the group: Match all characters except soft quotes
+            _attachmentName = new Regex("Content-Type: .+; name=\"?([^\"]+)\"?");
         }
 
         private void ParseMessage()

@@ -8,6 +8,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using SimpleSmtpInterceptor.Lib.Services;
 
 namespace SimpleSmtpInterceptor.Lib.Server
 {
@@ -167,7 +168,36 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
             var str = isMessageNull ? string.Empty : email.Message;
 
-            Console.WriteLine($"sent to -> {email.To}\n\tMessage length: {str.Length:n0}\n\tAttachments: {email.AttachmentCount}");
+            var estimatedSize = email.AttachmentArchive.Length / 1024D;
+
+            Console.Write("Sent @ ");
+            PrintTimeStamp();
+            Console.WriteLine();
+
+            Console.Write("Sent to : ");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine(email.To);
+            Console.ResetColor();
+
+            Console.Write("Subject : ");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine(email.Subject);
+            Console.ResetColor();
+
+            Console.Write("\tMessage length  : ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"{str.Length:n0}");
+            Console.ResetColor();
+
+            Console.Write("\tAttachments     : ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(email.AttachmentCount);
+            Console.ResetColor();
+
+            Console.Write("\tAttachment size : ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"{estimatedSize:n2} KB");
+            Console.ResetColor();
         }
 
         private void SaveEmail(Email email)
