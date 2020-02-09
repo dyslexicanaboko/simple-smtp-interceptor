@@ -11,14 +11,14 @@ void Main()
 	//Send a single email
 	//SingleSend("fake@email.com");
 
-	//Send a single email null message
-	//SingleSend(new Email { Message = null } );
+	//Send a single email null message - no attachments
+	SingleSend(new Email { Message = null } );
 
 	//Send a single email with three attachments
-	SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText });
+	//SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText });
 	//SingleSend(new Email { From = "imageFiles@email.com", Attachments = FilesImage });
 	//SingleSend(new Email { From = "largeFile@email.com", Attachments = FilesLarge } );
-	
+
 	//Send 100 emails in parallel
 	//ParallelSend(100);
 	
