@@ -1,14 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.Internal;
 using SimpleSmtpInterceptor.Data;
 using SimpleSmtpInterceptor.Data.Entities;
-using SimpleSmtpInterceptor.Data.Models;
 using SimpleSmtpInterceptor.Lib.Parsers;
+using SimpleSmtpInterceptor.Lib.Services;
 using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Text;
-using System.Text.RegularExpressions;
-using SimpleSmtpInterceptor.Lib.Services;
 
 namespace SimpleSmtpInterceptor.Lib.Server
 {
@@ -27,7 +24,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
             _verboseOutput = verboseOutput;
 
-            _context = new InterceptorModelFactory().CreateDbContext(null);
+            _context = GetContext();
 
             Console.WriteLine();
         }
@@ -86,7 +83,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
                                             email.AttachmentArchive = rawFile.Contents;
                                         }
 
-                                        WriteMessage(header, email);
+                                        WriteMessage(email);
 
                                         SaveEmail(email);
 
@@ -132,72 +129,49 @@ namespace SimpleSmtpInterceptor.Lib.Server
             return line;
         }
 
-        private static string DecodeQuotedPrintable(string input)
+        private void WriteMessage(Email email)
         {
-            var occurrences = new Regex(@"(=[0-9A-Z][0-9A-Z])+", RegexOptions.Multiline);
-
-            var matches = occurrences.Matches(input);
-
-            foreach (Match m in matches)
+            try
             {
-                var bytes = new byte[m.Value.Length / 3];
+                var messageSize = GetKiloBytes(email.Message);
 
-                for (var i = 0; i < bytes.Length; i++)
-                {
-                    var hex = m.Value.Substring(i * 3 + 1, 2);
+                var archiveSize = GetKiloBytes(email.AttachmentArchive);
 
-                    var iHex = Convert.ToInt32(hex, 16);
+                Console.Write("Sent @ ");
+                PrintTimeStamp();
+                Console.WriteLine();
 
-                    bytes[i] = Convert.ToByte(iHex);
-                }
+                Console.Write("Sent to : ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(email.To);
+                Console.ResetColor();
 
-                input = input.Replace(m.Value, Encoding.Default.GetString(bytes));
+                Console.Write("Subject : ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(email.Subject);
+                Console.ResetColor();
+
+                Console.Write("\tMessage length  : ");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"{messageSize:n2} KB");
+                Console.ResetColor();
+
+                Console.Write("\tAttachments     : ");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(email.AttachmentCount);
+                Console.ResetColor();
+
+                Console.Write("\tAttachment size : ");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"{archiveSize:n2} KB");
+                Console.ResetColor();
             }
-
-            return input.Replace("=\r\n", string.Empty);
-        }
-
-        private void WriteMessage(EmailHeader header, Email email)
-        {
-            var isMessageNull = email.Message == null;
-
-            if (!isMessageNull && header.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
+            catch (Exception ex)
             {
-                email.Message = DecodeQuotedPrintable(email.Message);
+                Console.WriteLine($"The method \"WriteMessage()\" encountered an exception, but this is not a critical error. Your message should have been saved. 0x202002082352\n\tError: {ex.Message}\n\tCheck the log for more details.");
+
+                LogError(ex, email);
             }
-
-            var str = isMessageNull ? string.Empty : email.Message;
-
-            var estimatedSize = email.AttachmentArchive.Length / 1024D;
-
-            Console.Write("Sent @ ");
-            PrintTimeStamp();
-            Console.WriteLine();
-
-            Console.Write("Sent to : ");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(email.To);
-            Console.ResetColor();
-
-            Console.Write("Subject : ");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(email.Subject);
-            Console.ResetColor();
-
-            Console.Write("\tMessage length  : ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"{str.Length:n0}");
-            Console.ResetColor();
-
-            Console.Write("\tAttachments     : ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(email.AttachmentCount);
-            Console.ResetColor();
-
-            Console.Write("\tAttachment size : ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"{estimatedSize:n2} KB");
-            Console.ResetColor();
         }
 
         private void SaveEmail(Email email)
@@ -225,7 +199,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
                 log.Properties = SerializeAsJson(email);
             }
 
-            using (var context = new InterceptorModelFactory().CreateDbContext(null))
+            using (var context = GetContext())
             {
                 context.Logs.Add(log);
                 context.SaveChanges();
