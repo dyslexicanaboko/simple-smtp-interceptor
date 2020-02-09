@@ -1,5 +1,13 @@
 # simple-smtp-interceptor
-A very simplistic, bare minimum, SMTP interceptor for capturing SMTP traffic written in C# dot net core 2.1. Includes a very basic UI, console, tester and windows service using nssm.exe
+A very simplistic, bare minimum, SMTP interceptor for capturing SMTP traffic. Written in C# dot net core 2.1. Includes a very basic UI, console, tester and windows service using nssm.exe.
+
+## Updates
+- 10/05/2019 - Initial push to GitHub. Only handles email with no attachments.
+- 10/14/2019 - I adjusted the stock UI to be a little more friendly to use. It's still hideous, but slightly more functional.
+- 10/31/2019 - Added an error log for any emails that cannot be saved for any reason.
+- 02/02/2020
+  - Basic support for attachments. Attachments were not the main focus of this project, but I didn't realize how they impact the composition of an email during serialization. Therefore to minimize transmission errors, I have implemented support for this. Regardless of the number of attachments, they will be compressed into a zip file and stored in the database.
+  - Updated UI to only show the HTML version of a message. Text option is still available but not selected by default. Included a column for attachments count.
 
 ## Why did you make another project for this when others exist?
 I was really tired of trying to find an SMTP development friendly server that I could host for everyone in my department to use for testing. I know of a few, but they don't work properly or some are just over the top with configuration. I wanted something straight forward and when I can't find it, I just build it myself.
@@ -9,9 +17,7 @@ Microsoft developers or anyone willing to figure out how to set it up. This proj
 
 ### My UI is terrible
 I still have to update the UI - however you can bypass the UI and just hit the database instead. Or build your own UI that's way better than mine. The UI is built using a stock Angular 5 template so it is already outdated. I will worry more about this later (11/17/2018).
-
-#### 10/14/2019 Update
-I adjusted the stock UI to be a little more friendly to use. It's still hideous, but slightly more functional.
+- 02/09/2020 - I am getting pretty annoyed with Angular, so I am thinking about providing an alternate MVC interface. I'm still thinking about it.
 
 # How do I get started?
 I tried making this as simple as possible, which also means this project isn't feature packed. 
@@ -121,3 +127,6 @@ These are the available test methods:
    1. This is incredibly annoying to deal with, especially if you have Norton AntiVirus installed which will tell you about every single email that has failed to send in a separate pop up window. You have been warned.
 1. ParallelSend - after you have setup your console or windows service properly, you can use this for testing a lot of email at once.
 1. SendSubjectBatchedEmails - send a multitude of emails with random subject lines to have some variety in what is being sent/received.
+
+#### Upates to this script
+I am constantly making updates to this script to test the project. So I cannot guarantee what state I will leave it in. Some methods may not work anymore depending on what I am doing. Eventually I will realize this and fix it.
