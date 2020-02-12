@@ -3,6 +3,8 @@ using SimpleSmtpInterceptor.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SimpleSmtpInterceptor.Lib.Parsers
 {
@@ -112,6 +114,44 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             return parser;
         }
 
+        //TODO: Need to test this more - I don't like magic numbers
+        protected string RemoveTrailingEquals(string line)
+        {
+            if (line.Length < 66) return line;
+
+            if (!line.EndsWith("=")) return line;
+
+            line = line.TrimEnd('=');
+
+            return line;
+        }
+
+        //TODO: This should handle multiple charsets
+        protected string DecodeQuotedPrintable(string input)
+        {
+            var occurrences = new Regex(@"(=[0-9A-Z][0-9A-Z])+", RegexOptions.Multiline);
+
+            var matches = occurrences.Matches(input);
+
+            foreach (Match m in matches)
+            {
+                var bytes = new byte[m.Value.Length / 3];
+
+                for (var i = 0; i < bytes.Length; i++)
+                {
+                    var hex = m.Value.Substring(i * 3 + 1, 2);
+
+                    var iHex = Convert.ToInt32(hex, 16);
+
+                    bytes[i] = Convert.ToByte(iHex);
+                }
+
+                input = input.Replace(m.Value, Encoding.Default.GetString(bytes));
+            }
+
+            return input;
+        }
+
         public Email GetEmail()
         {
             var h = ParsedEmail.Header;
@@ -124,11 +164,6 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             e.CreatedOnUtc = DateTime.UtcNow;
 
             return e;
-        }
-
-        public EmailHeader GetHeader()
-        {
-            return ParsedEmail.Header;
         }
 
         public List<EmailAttachment> GetAttachments()

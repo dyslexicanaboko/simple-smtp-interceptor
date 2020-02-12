@@ -108,7 +108,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
                         catch (InvalidEmailException iee)
                         {
                             Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.WriteLine($"This email cannot not be saved. {iee.Message}.\nCheck log for more details.");
+                            Console.WriteLine("This email cannot not be saved. Check log for more details.");
                             Console.ResetColor();
 
                             _log.LogError(iee, email);

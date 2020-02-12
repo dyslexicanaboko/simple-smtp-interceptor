@@ -60,13 +60,22 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                 }
                 else
                 {
+                    line = RemoveTrailingEquals(line);
+
                     sb.Append(line);
                 }
 
                 line = GetNextLine();
             }
 
-            ParsedEmail.Email.Message = sb.ToString();
+            var message = sb.ToString();
+
+            if (ParsedEmail.Header.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
+            {
+                message = DecodeQuotedPrintable(message);
+            }
+
+            ParsedEmail.Email.Message = message;
         }
 
         protected void ParseAttachments()
