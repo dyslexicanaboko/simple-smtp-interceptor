@@ -28,6 +28,9 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             _attachmentName = new Regex("Content-Type: .+; name=\"?([^\"]+)\"?");
         }
 
+        /// <summary>
+        /// Parse the email message (body) first before parsing the attachments
+        /// </summary>
         private void ParseMessage()
         {
             var line = GetNextLine();
@@ -35,6 +38,8 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             var sb = new StringBuilder();
 
             var boundaryCount = 0;
+
+            var e = ParsedEmail.Email;
 
             while (line != null && boundaryCount < 2)
             {
@@ -50,36 +55,49 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                     continue;
                 }
 
-                if (line.StartsWith(Headers.ContentTransferEncoding))
+                if (TryGetAttribute(line, Headers.ContentTransferEncoding, out var val))
                 {
-                    //Save to Header Info
+                    e.ContentTransferEncoding = val;
                 }
-                else if (line.StartsWith(Headers.ContentType))
+                else if (TryGetAttribute(line, Headers.ContentType, out val))
                 {
-                    //Save to Header Info
+                    e.ContentType = val;
                 }
                 else
                 {
+                    //Email message data
+                    line = RemoveTrailingEquals(line);
+
                     sb.Append(line);
                 }
 
                 line = GetNextLine();
             }
 
-            ParsedEmail.Email.Message = sb.ToString();
+            var message = sb.ToString();
+
+            if (e.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
+            {
+                message = DecodeQuotedPrintable(e.ContentType, message);
+            }
+
+            e.Message = message;
         }
 
+        /// <summary>
+        /// Attachments are after the message
+        /// </summary>
         protected void ParseAttachments()
         {
             var line = GetNextLine();
 
-            var lst = new List<EmailAttachment>();
+            var lst = new List<Attachment>();
 
             var endReached = false;
 
             while (!endReached)
             {
-                var a = new EmailAttachment();
+                var a = new Attachment();
 
                 var sb = new StringBuilder();
 
@@ -97,20 +115,22 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                         break;
                     }
 
-                    if (line.StartsWith(Headers.ContentTransferEncoding))
+                    string val = null;
+
+                    if (TryGetAttribute(line, Headers.ContentTransferEncoding, out val))
                     {
-                        //Save to Header Info
+                        a.ContentTransferEncoding = val;
                     }
-                    else if (line.StartsWith(Headers.ContentType))
+                    else if (TryGetAttribute(line, Headers.ContentType, out val))
                     {
                         //Save attachment name
                         var m = _attachmentName.Match(line);
 
                         a.Name = m.Success ? m.Groups[1].Value : Path.GetRandomFileName();
                     }
-                    else if (line.StartsWith(Headers.ContentDisposition))
+                    else if (TryGetAttribute(line, Headers.ContentDisposition, out val))
                     {
-                        //Save to Header Info? Maybe?
+                        a.ContentDisposition = val;
                     }
                     else
                     {

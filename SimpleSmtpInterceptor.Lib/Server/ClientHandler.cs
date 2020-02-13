@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Internal;
-using SimpleSmtpInterceptor.Data;
 using SimpleSmtpInterceptor.Data.Entities;
+using SimpleSmtpInterceptor.Lib.Exceptions;
 using SimpleSmtpInterceptor.Lib.Parsers;
 using SimpleSmtpInterceptor.Lib.Services;
 using System;
@@ -16,7 +16,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
         
         private readonly bool _verboseOutput;
 
-        private readonly InterceptorModel _context;
+        private readonly LogService _log;
 
         public ClientHandler(TcpClient client, bool verboseOutput)
         {
@@ -24,7 +24,7 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
             _verboseOutput = verboseOutput;
 
-            _context = GetContext();
+            _log = new LogService();
 
             Console.WriteLine();
         }
@@ -61,14 +61,13 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
                                         if (parser == null)
                                         {
-                                            throw new Exception("Parser was returned as null somehow... 0x202002020103");
+                                            throw new Exception(
+                                                "Parser was returned as null somehow... 0x202002020103");
                                         }
 
                                         parser.ParseBody();
 
                                         email = parser.GetEmail();
-
-                                        var header = parser.GetHeader();
 
                                         var attachments = parser.GetAttachments();
 
@@ -85,7 +84,11 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
                                         WriteMessage(email);
 
-                                        SaveEmail(email);
+                                        var svcEmail = new EmailService(email);
+
+                                        svcEmail.ValidateEmail();
+
+                                        svcEmail.SaveEmail();
 
                                         writer.WriteLine("250 OK");
                                         break;
@@ -102,6 +105,14 @@ namespace SimpleSmtpInterceptor.Lib.Server
                                 }
                             }
                         }
+                        catch (InvalidEmailException iee)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine("This email cannot not be saved. Check log for more details.");
+                            Console.ResetColor();
+
+                            _log.LogError(iee, email);
+                        }
                         catch (IOException ioe)
                         {
                             Console.BackgroundColor = ConsoleColor.Yellow;
@@ -109,11 +120,11 @@ namespace SimpleSmtpInterceptor.Lib.Server
                             Console.WriteLine("Connection lost.");
                             Console.ResetColor();
 
-                            LogError(ioe, email);
+                            _log.LogError(ioe, email);
                         }
                         catch (Exception ex)
                         {
-                            LogError(ex, email);
+                            _log.LogError(ex, email);
                         }
                     }
                 }
@@ -170,46 +181,12 @@ namespace SimpleSmtpInterceptor.Lib.Server
             {
                 Console.WriteLine($"The method \"WriteMessage()\" encountered an exception, but this is not a critical error. Your message should have been saved. 0x202002082352\n\tError: {ex.Message}\n\tCheck the log for more details.");
 
-                LogError(ex, email);
-            }
-        }
-
-        private void SaveEmail(Email email)
-        {
-            _context.Emails.Add(email);
-            _context.SaveChanges();
-        }
-
-        private void LogError(Exception exception, Email email = null)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(exception.ToString());
-            Console.ResetColor();
-
-            var log = new Log();
-
-            log.Message = "Ex: " + exception.GetType().Name + " ExMsg: " + exception.Message;
-
-            log.Exception = exception.ToString();
-
-            log.Level = @"Error";
-
-            if (email != null)
-            {
-                log.Properties = SerializeAsJson(email);
-            }
-
-            using (var context = GetContext())
-            {
-                context.Logs.Add(log);
-                context.SaveChanges();
+                _log.LogError(ex, email);
             }
         }
 
         public void Dispose()
         {
-            _context?.Dispose();
-
             if(_client == null) return;
 
             _client.Close();

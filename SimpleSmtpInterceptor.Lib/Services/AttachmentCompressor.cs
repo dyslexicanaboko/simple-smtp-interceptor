@@ -8,9 +8,9 @@ namespace SimpleSmtpInterceptor.Lib.Services
 {
     public class AttachmentCompressor
     {
-        private readonly IList<EmailAttachment> _attachments;
+        private readonly IList<Attachment> _attachments;
 
-        public AttachmentCompressor(IList<EmailAttachment> attachments)
+        public AttachmentCompressor(IList<Attachment> attachments)
         {
             _attachments = attachments;
         }

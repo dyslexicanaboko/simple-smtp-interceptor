@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using SimpleSmtpInterceptor.Data.Models;
 
 namespace SimpleSmtpInterceptor.Data.Entities
 {
     [DataContract]
     public class Email
+        : Content
     {
         [DataMember]
         public long EmailId { get; set; }
@@ -32,5 +34,9 @@ namespace SimpleSmtpInterceptor.Data.Entities
 
         [IgnoreDataMember]
         public byte[] AttachmentArchive { get; set; }
+
+        //Evaluated properties
+        [DataMember]
+        public string CharSet { get; set; }
     }
 }

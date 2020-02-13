@@ -3,7 +3,8 @@
 namespace SimpleSmtpInterceptor.Data.Models
 {
     [DataContract]
-    public class EmailHeader
+    public class Header
+        : Content
     {
         [DataMember]
         public string Subject { get; set; }
@@ -19,11 +20,5 @@ namespace SimpleSmtpInterceptor.Data.Models
 
         [DataMember]
         public string Date { get; set; }
-
-        [DataMember]
-        public string ContentType { get; set; }
-
-        [DataMember]
-        public string ContentTransferEncoding { get; set; }
     }
 }

@@ -18,21 +18,24 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
             var sb = new StringBuilder();
 
+            //All message data - nothing else to find here
             while (line != null && line != ".")
             {
-                if (line.StartsWith(Headers.ContentTransferEncoding))
-                {
-                    //Save to Header Info
-                }
-                else
-                {
-                    sb.Append(line);
-                }
+                line = RemoveTrailingEquals(line);
+
+                sb.Append(line);
 
                 line = GetNextLine();
             }
-	
-            ParsedEmail.Email.Message = sb.ToString();
+
+            var message = sb.ToString();
+
+            if (ParsedEmail.Header.ContentTransferEncoding == ContentTransferEncodings.QuotedPrintable)
+            {
+                message = DecodeQuotedPrintable(ParsedEmail.Email.ContentType, message);
+            }
+
+            ParsedEmail.Email.Message = message;
         }
 
         public override void ParseBody()
