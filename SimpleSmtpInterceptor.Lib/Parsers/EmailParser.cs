@@ -169,7 +169,6 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             return line;
         }
 
-        //TODO: This should handle multiple charsets
         protected string DecodeQuotedPrintable(string contentType, string input)
         {
             var charSet = TryGetCharSet(contentType);
