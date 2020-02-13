@@ -45,6 +45,15 @@ namespace SimpleSmtpInterceptor.Data.Mappings
                 .HasColumnType("datetime2")
                 .HasDefaultValueSql("getutcdate()")
                 .IsRequired();
+
+            //Ignored properties
+            b.Ignore(x => x.CharSet);
+
+            b.Ignore(x => x.ContentDisposition);
+
+            b.Ignore(x => x.ContentTransferEncoding);
+
+            b.Ignore(x => x.ContentType);
         }
     }
 }

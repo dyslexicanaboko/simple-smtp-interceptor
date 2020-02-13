@@ -31,9 +31,14 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
         private string ReadNextLine()
         {
-            var line = Reader.ReadLine();
+            return ReadNextLine(Reader, _verboseOutput);
+        }
 
-            if(_verboseOutput) Console.WriteLine(line);
+        private static string ReadNextLine(TextReader reader, bool verboseOutput)
+        {
+            var line = reader.ReadLine();
+
+            if(verboseOutput) Console.WriteLine(line);
 
             return line;
         }
@@ -47,11 +52,23 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
         public abstract void ParseBody();
 
+        /// <summary>
+        /// Build the header object while trying to determine what kind of email is this.
+        /// Currently there is support for: Email Only, Email with Attachments and Header only
+        /// </summary>
+        /// <param name="reader">incoming email stream</param>
+        /// <param name="verboseOutput">true prints out every line of the reader</param>
+        /// <returns>Methodology to parse the remainder of the email</returns>
 		public static EmailParser GetEmailParser(TextReader reader, bool verboseOutput)
 		{
-			var obj = new EmailHeader();
+			var obj = new Header();
 
-            var line = reader.ReadLine();
+            string GetNextLine()
+            {
+                return ReadNextLine(reader, verboseOutput);
+            };
+
+            var line = GetNextLine();
 
             EmailParser parser = null;
 
@@ -62,29 +79,29 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                     break;
                 }
 
-				if (line.StartsWith(Headers.Subject))
+                if (TryGetAttribute(line, Headers.Subject, out var val))
 				{
-					obj.Subject = line.Substring(Headers.Subject.Length);
+					obj.Subject = val;
 				}
-				else if (line.StartsWith(Headers.From))
+				else if (TryGetAttribute(line, Headers.From, out val))
 				{
-					obj.From = line.Substring(Headers.From.Length);
+					obj.From = val;
 				}
-				else if (line.StartsWith(Headers.To))
+				else if (TryGetAttribute(line, Headers.To, out val))
 				{
-					obj.To = line.Substring(Headers.To.Length);
+					obj.To = val;
 				}
-				else if (line.StartsWith(Headers.MimeVersion))
+				else if (TryGetAttribute(line, Headers.MimeVersion, out val))
 				{
-					obj.MimeVersion = line.Substring(Headers.MimeVersion.Length);
+					obj.MimeVersion = val;
 				}
-				else if (line.StartsWith(Headers.Date))
+				else if (TryGetAttribute(line, Headers.Date, out val))
 				{
-					obj.Date = line.Substring(Headers.Date.Length);
+					obj.Date = val;
 				}
-				else if (line.StartsWith(Headers.ContentType))
+				else if (TryGetAttribute(line, Headers.ContentType, out val))
 				{
-                    obj.ContentType = line.Substring(Headers.ContentType.Length);
+                    obj.ContentType = val;
 
                     if (obj.ContentType == ContentFileTypes.MultiPartMixed)
                     {
@@ -95,16 +112,16 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                         parser = new EmailOnlyParser(reader, verboseOutput);
                     }
                 }
-				else if (line.StartsWith(Headers.ContentTransferEncoding))
+				else if (TryGetAttribute(line, Headers.ContentTransferEncoding, out val))
 				{
-					obj.ContentTransferEncoding = line.Substring(Headers.ContentTransferEncoding.Length);
+					obj.ContentTransferEncoding = val;
 				}
 				else if(line == string.Empty)
 				{
 					break;
 				}
 
-                line = reader.ReadLine();
+                line = GetNextLine();
             }
 
             if(parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
@@ -112,6 +129,32 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             parser.ParsedEmail.Header = obj;
 
             return parser;
+        }
+
+        protected static bool TryGetAttribute(string text, string attribute, out string attributeValue)
+        {
+            attributeValue = null;
+
+            if (!text.StartsWith(attribute)) return false;
+
+            attributeValue = text.Substring(attribute.Length);
+
+            return true;
+        }
+
+        protected static string TryGetCharSet(string contentType)
+        {
+            if (string.IsNullOrWhiteSpace(contentType)) return null;
+
+            var arr = contentType.Split(new[] {';'});
+
+            if (arr.Length < 2) return null;
+
+            var token = arr[1];
+
+            if (!TryGetAttribute(token, Headers.CharSet, out var charSet)) return null;
+
+            return charSet;
         }
 
         //TODO: Need to test this more - I don't like magic numbers
@@ -127,8 +170,23 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
         }
 
         //TODO: This should handle multiple charsets
-        protected string DecodeQuotedPrintable(string input)
+        protected string DecodeQuotedPrintable(string contentType, string input)
         {
+            var charSet = TryGetCharSet(contentType);
+
+            Func<byte[], string> fEncoder;
+
+            if (charSet == null)
+            {
+                //If no charset was found then use the default and hope it works
+                fEncoder = (bytes) => Encoding.Default.GetString(bytes);
+            }
+            else
+            {
+                //If a charset was found then use that specific encoder
+                fEncoder = (bytes) => Encoding.GetEncoding(charSet).GetString(bytes);
+            }
+
             var occurrences = new Regex(@"(=[0-9A-Z][0-9A-Z])+", RegexOptions.Multiline);
 
             var matches = occurrences.Matches(input);
@@ -146,7 +204,9 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                     bytes[i] = Convert.ToByte(iHex);
                 }
 
-                input = input.Replace(m.Value, Encoding.Default.GetString(bytes));
+                var strEncoded = fEncoder(bytes);
+
+                input = input.Replace(m.Value, strEncoded);
             }
 
             return input;
@@ -166,7 +226,7 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             return e;
         }
 
-        public List<EmailAttachment> GetAttachments()
+        public List<Attachment> GetAttachments()
         {
             return ParsedEmail.Attachments;
         }

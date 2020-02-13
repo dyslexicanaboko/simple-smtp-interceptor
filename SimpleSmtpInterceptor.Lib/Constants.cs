@@ -11,6 +11,7 @@
         public const string ContentTransferEncoding = "Content-Transfer-Encoding: ";
         public const string ContentDisposition = "Content-Disposition: ";
         public const string Boundary = " boundary=";
+        public const string CharSet = " charset=";
     }
 
     public static class ContentDispositions
