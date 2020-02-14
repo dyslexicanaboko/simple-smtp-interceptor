@@ -13,5 +13,17 @@ namespace SimpleSmtpInterceptor.Data.Models
 
         [DataMember]
         public string ContentDisposition { get; set; }
+
+        public Content CloneContent()
+        {
+            var c = new Content
+            {
+                ContentTransferEncoding = ContentTransferEncoding,
+                ContentDisposition = ContentDisposition,
+                ContentType = ContentType
+            };
+
+            return c;
+        }
     }
 }

@@ -56,6 +56,8 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
         public abstract void ParseBody();
 
+        protected abstract void SavePayloadHeaderContent();
+
         /// <summary>
         /// Build the header object while trying to determine what kind of email is this.
         /// Currently there is support for: Email Only, Email with Attachments and Header only

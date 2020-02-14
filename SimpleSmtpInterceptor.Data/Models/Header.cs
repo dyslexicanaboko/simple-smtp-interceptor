@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace SimpleSmtpInterceptor.Data.Models
 {
@@ -26,5 +27,11 @@ namespace SimpleSmtpInterceptor.Data.Models
 
         [DataMember]
         public string Date { get; set; }
+
+        [DataMember]
+        public Content EmailContent { get; set; }
+
+        [DataMember]
+        public List<Content> AttachmentsContent { get; set; }
     }
 }

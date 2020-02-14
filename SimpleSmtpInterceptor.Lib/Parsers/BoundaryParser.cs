@@ -150,11 +150,26 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             ParsedEmail.Attachments = lst;
         }
 
+        protected override void SavePayloadHeaderContent()
+        {
+            var h = ParsedEmail.Header;
+
+            h.EmailContent = ParsedEmail.Email.CloneContent();
+
+            var lst = ParsedEmail.Attachments;
+
+            h.AttachmentsContent = new List<Content>(lst.Count);
+
+            lst.ForEach(x => h.AttachmentsContent.Add(x.CloneContent()));
+        }
+
         public override void ParseBody()
         {
             ParseMessage();
 
             ParseAttachments();
+
+            SavePayloadHeaderContent();
         }
     }
 }

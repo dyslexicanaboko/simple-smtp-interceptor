@@ -38,9 +38,16 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             ParsedEmail.Email.Message = message;
         }
 
+        protected override void SavePayloadHeaderContent()
+        {
+            ParsedEmail.Header.EmailContent = ParsedEmail.Email.CloneContent();
+        }
+
         public override void ParseBody()
         {
             ParseMessage();
+
+            SavePayloadHeaderContent();
         }
     }
 }

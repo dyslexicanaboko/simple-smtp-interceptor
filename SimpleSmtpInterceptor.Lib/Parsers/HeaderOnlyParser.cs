@@ -12,7 +12,12 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
         public override void ParseBody()
         {
-            
+            //There is nothing else to parse
+        }
+
+        protected override void SavePayloadHeaderContent()
+        {
+            //There is nothing else to save
         }
     }
 }
