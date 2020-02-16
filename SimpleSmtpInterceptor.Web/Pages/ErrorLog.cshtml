@@ -1,0 +1,70 @@
+﻿@page
+@model SimpleSmtpInterceptor.Web.Pages.ErrorLogModel
+
+@{
+    ViewData["Title"] = "Error Log";
+    Layout = "~/Pages/_Layout.cshtml";
+}
+
+<h2>Error Log</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].MachineName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].CreatedOnUtc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].Level)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].Message)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].Logger)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].Properties)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].Callsite)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Log[0].Exception)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Log) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MachineName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedOnUtc)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Level)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Message)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Logger)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Properties)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Callsite)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Exception)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
