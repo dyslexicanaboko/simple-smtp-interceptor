@@ -1,9 +1,13 @@
 <Query Kind="Program">
   <Reference>&lt;RuntimeDirectory&gt;\System.Web.dll</Reference>
+  <NuGetReference>Microsoft.AspNetCore.StaticFiles</NuGetReference>
   <Namespace>System.Net.Mail</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
   <Namespace>System.Web</Namespace>
+  <Namespace>Microsoft.AspNetCore.StaticFiles</Namespace>
 </Query>
+
+private static readonly Regex ReWhitespace = new Regex(@"\s+");
 
 //Open with LinqPad https://www.linqpad.net/
 void Main()
@@ -11,11 +15,14 @@ void Main()
 	//Send a single email
 	//SingleSend("fake@email.com");
 
+	//Send a single email with To, CC and BCC set
+	SingleSend(new Email());
+
 	//Send a single email null message - no attachments
 	//SingleSend(new Email { Message = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>The HTML5 Herald</title><meta name=\"description\" content=\"The HTML5 Herald\"><meta name=\"author\" content=\"SitePoint\"><style type=\"html/css\">.p { color: black; }.span { border: black solid 1px; }.td { background-color: aqua;}</style></head><body><table style=\"border: black solid 2px;\"><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th></tr></thead><tbody><tr><td>1,1</td><td>1,2</td><td>1,3</td><td>1,4</td></tr><tr><td>2,1</td><td>2,2</td><td>2,3</td><td>2,4</td></tr><tr><td>3,1</td><td>3,2</td><td>3,3</td><td>3,4</td></tr><tr><td>4,1</td><td>4,2</td><td>4,3</td><td>4,4</td></tr></tbody></table></body></html>" } );
 
 	//Send a single email with three attachments
-	SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText, Message = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>The HTML5 Herald</title><meta name=\"description\" content=\"The HTML5 Herald\"><meta name=\"author\" content=\"SitePoint\"><style type=\"html/css\">.p { color: black; }.span { border: black solid 1px; }.td { background-color: aqua;}</style></head><body><table style=\"border: black solid 2px;\"><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th></tr></thead><tbody><tr><td>1,1</td><td>1,2</td><td>1,3</td><td>1,4</td></tr><tr><td>2,1</td><td>2,2</td><td>2,3</td><td>2,4</td></tr><tr><td>3,1</td><td>3,2</td><td>3,3</td><td>3,4</td></tr><tr><td>4,1</td><td>4,2</td><td>4,3</td><td>4,4</td></tr></tbody></table></body></html>" });
+	//SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText, Message = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>The HTML5 Herald</title><meta name=\"description\" content=\"The HTML5 Herald\"><meta name=\"author\" content=\"SitePoint\"><style type=\"html/css\">.p { color: black; }.span { border: black solid 1px; }.td { background-color: aqua;}</style></head><body><table style=\"border: black solid 2px;\"><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th></tr></thead><tbody><tr><td>1,1</td><td>1,2</td><td>1,3</td><td>1,4</td></tr><tr><td>2,1</td><td>2,2</td><td>2,3</td><td>2,4</td></tr><tr><td>3,1</td><td>3,2</td><td>3,3</td><td>3,4</td></tr><tr><td>4,1</td><td>4,2</td><td>4,3</td><td>4,4</td></tr></tbody></table></body></html>" });
 	//SingleSend(new Email { From = "textFiles@email.com", Message = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>The HTML5 Herald</title><meta name=\"description\" content=\"The HTML5 Herald\"><meta name=\"author\" content=\"SitePoint\"><style type=\"html/css\">.p { color: black; }.span { border: black solid 1px; }.td { background-color: aqua;}</style></head><body><table style=\"border: black solid 2px;\"><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th></tr></thead><tbody><tr><td>1,1</td><td>1,2</td><td>1,3</td><td>1,4</td></tr><tr><td>2,1</td><td>2,2</td><td>2,3</td><td>2,4</td></tr><tr><td>3,1</td><td>3,2</td><td>3,3</td><td>3,4</td></tr><tr><td>4,1</td><td>4,2</td><td>4,3</td><td>4,4</td></tr></tbody></table></body></html>" });
 	//SingleSend(new Email { From = "textFiles@email.com", Attachments = FilesText });
 	//SingleSend(new Email { From = "imageFiles@email.com", Attachments = FilesImage });
@@ -126,13 +133,19 @@ public void SingleSend(Email email)
 {
 	using (var client = new SmtpClient())
 	{
-		using (var mail = new MailMessage(email.From, email.To))
+		using (var mail = new MailMessage())
 		{
 			client.Port = 25;
 			client.DeliveryMethod = SmtpDeliveryMethod.Network;
 			client.UseDefaultCredentials = false;
 			client.Host = "localhost";
 			
+			mail.From = new MailAddress(email.From);
+
+			AddEmailAddresses(email.To, mail.To);
+			AddEmailAddresses(email.Cc, mail.CC);
+			AddEmailAddresses(email.Bcc, mail.Bcc);
+
 			mail.Subject = email.Subject;
 			mail.Body = email.Message;
 			mail.IsBodyHtml = true;
@@ -168,6 +181,25 @@ public void SingleSend(Email email)
 	}
 }
 
+private void AddEmailAddresses(string emailCsv, MailAddressCollection collection)
+{
+	if(string.IsNullOrWhiteSpace(emailCsv)) return;
+	
+	//Convert commas to semi-colons
+	var emails = emailCsv.Replace(",", ";");
+	
+	//Remove all whitespace
+	emails = ReWhitespace.Replace(emails, string.Empty);
+	
+	var arr = emailCsv.Split(';');
+	
+	foreach (var e in arr)
+	{
+		//This has the potential to blow up if the email address is invalid
+		collection.Add(e);
+	}
+}
+
 // Send one email to get the idea and make sure your setup is working
 public void SingleSend(int taskNumber)
 {
@@ -190,9 +222,12 @@ public List<Attachment> GetAttachments(string[] fileNames)
 	{
 		var filePath = Path.Combine(path, file);
 		
-		string mimeType = MimeMapping.GetMimeMapping(file);
+		//This does not support a wide vareity of MIME types but this is just for testing
+		new FileExtensionContentTypeProvider().TryGetContentType(file, out var mimeType);
 		
-		var a = new Attachment(filePath, mimeType);
+		var contentType = mimeType ?? "application/octet-stream";
+
+		var a = new Attachment(filePath, contentType);
 		
 		lst.Add(a);
 	}
@@ -206,7 +241,11 @@ public class Email
 	
 	public string From { get; set; } = @"linqPadTest@local.com";
 
-	public string To { get; set; } = @"whatever@email.com";
+	public string To { get; set; } = @"ToWhatever@email.com";
+	
+	public string Cc { get; set; } = @"CcWhatever@email.com";
+	
+	public string Bcc { get; set; } = @"BccWhatever@email.com";
 
 	public string Subject { get; set; } = StockSubject;
 
