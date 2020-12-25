@@ -3,14 +3,18 @@ using SimpleSmtpInterceptor.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SimpleSmtpInterceptor.Lib.Parsers
 {
+    //This application assumes "TO" address will always be provided
     public abstract class EmailParser
         : CommonBase
 	{
+        private static readonly Regex ReWhiteSpace = new Regex(@"\s+");
+
         protected ParsedEmail ParsedEmail { get; } = new ParsedEmail();
 
 		protected readonly TextReader Reader;
@@ -59,7 +63,7 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
         /// <param name="reader">incoming email stream</param>
         /// <param name="verboseOutput">true prints out every line of the reader</param>
         /// <returns>Methodology to parse the remainder of the email</returns>
-		public static EmailParser GetEmailParser(TextReader reader, bool verboseOutput)
+		public static EmailParser GetEmailParser(TextReader reader, List<string> rcptTo, bool verboseOutput)
 		{
 			var obj = new Header();
 
@@ -89,15 +93,11 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 				}
 				else if (TryGetAttribute(line, Headers.To, out val))
 				{
-					obj.To = val;
+					obj.To = FormatEmailCsv(val);
 				}
                 else if (TryGetAttribute(line, Headers.Cc, out val))
                 {
-                    obj.Cc = val;
-                }
-                else if (TryGetAttribute(line, Headers.Bcc, out val))
-                {
-                    obj.Bcc = val;
+                    obj.Cc = FormatEmailCsv(val);
                 }
                 else if (TryGetAttribute(line, Headers.MimeVersion, out val))
 				{
@@ -132,22 +132,34 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                 line = GetNextLine();
             }
 
-            if(parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
+            //Attempt to extract BCC
+            if (rcptTo.Any())
+            {
+                //Remove the To and Cc address matches as they will be in the list 
+                rcptTo.Remove(obj.To);
+                rcptTo.Remove(obj.Cc);
+
+                //Only take the remaining RCPT TO entry which is deduced to be BCC 
+                if (rcptTo.Count == 1)
+                {
+                    obj.Bcc = rcptTo[0];
+                }
+            }
+            
+            if (parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
 
             parser.ParsedEmail.Header = obj;
 
             return parser;
         }
 
-        protected static bool TryGetAttribute(string text, string attribute, out string attributeValue)
+        private static string FormatEmailCsv(string csv)
         {
-            attributeValue = null;
+            var str = csv.Replace(",", ";");
 
-            if (!text.StartsWith(attribute)) return false;
+            str = ReWhiteSpace.Replace(str, string.Empty);
 
-            attributeValue = text.Substring(attribute.Length);
-
-            return true;
+            return str;
         }
 
         protected static string TryGetCharSet(string contentType)

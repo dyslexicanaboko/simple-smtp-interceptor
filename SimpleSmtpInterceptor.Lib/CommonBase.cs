@@ -30,6 +30,17 @@ namespace SimpleSmtpInterceptor.Lib
             }
         }
 
+        protected static bool TryGetAttribute(string text, string attribute, out string attributeValue)
+        {
+            attributeValue = null;
+
+            if (!text.StartsWith(attribute)) return false;
+
+            attributeValue = text.Substring(attribute.Length);
+
+            return true;
+        }
+
         protected void PrintTimeStamp()
         {
             var dtm = DateTime.Now;

@@ -6,7 +6,9 @@
         public const string From = "From: ";
         public const string To = "To: ";
         public const string Cc = "Cc: ";
-        public const string Bcc = "Bcc: ";
+        //BCC is a strange issue according to the SMTP RFC. It isn't actually supported.
+        //public const string Bcc = "Bcc: ";
+        public const string RcptTo = "RCPT TO:";
         public const string MimeVersion = "MIME-Version: ";
         public const string Date = "Date: ";
         public const string ContentType = "Content-Type: ";
