@@ -26,6 +26,16 @@ namespace SimpleSmtpInterceptor.Data.Mappings
                 .HasMaxLength(1000)
                 .IsRequired();
 
+            b.Property(x => x.Cc)
+                .IsUnicode(false)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            b.Property(x => x.Bcc)
+                .IsUnicode(false)
+                .HasMaxLength(1000)
+                .IsRequired();
+
             b.Property(x => x.Subject)
                 .IsUnicode(false)
                 .HasMaxLength(78) //RFC 2822

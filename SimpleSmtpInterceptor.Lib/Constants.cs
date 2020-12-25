@@ -5,6 +5,8 @@
         public const string Subject = "Subject: ";
         public const string From = "From: ";
         public const string To = "To: ";
+        public const string Cc = "Cc: ";
+        public const string Bcc = "Bcc: ";
         public const string MimeVersion = "MIME-Version: ";
         public const string Date = "Date: ";
         public const string ContentType = "Content-Type: ";

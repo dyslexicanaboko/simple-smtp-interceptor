@@ -16,6 +16,12 @@ namespace SimpleSmtpInterceptor.Data.Models
         public string To { get; set; }
 
         [DataMember]
+        public string Cc { get; set; }
+
+        [DataMember]
+        public string Bcc { get; set; }
+
+        [DataMember]
         public string MimeVersion { get; set; }
 
         [DataMember]

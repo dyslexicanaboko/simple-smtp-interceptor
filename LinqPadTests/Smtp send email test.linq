@@ -9,7 +9,7 @@
 
 private static readonly Regex ReWhitespace = new Regex(@"\s+");
 
-//Open with LinqPad https://www.linqpad.net/
+//Open with LinqPad6 https://www.linqpad.net/
 void Main()
 {
 	//Send a single email

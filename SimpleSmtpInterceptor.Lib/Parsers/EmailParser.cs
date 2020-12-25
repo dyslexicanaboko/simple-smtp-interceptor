@@ -91,7 +91,15 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 				{
 					obj.To = val;
 				}
-				else if (TryGetAttribute(line, Headers.MimeVersion, out val))
+                else if (TryGetAttribute(line, Headers.Cc, out val))
+                {
+                    obj.Cc = val;
+                }
+                else if (TryGetAttribute(line, Headers.Bcc, out val))
+                {
+                    obj.Bcc = val;
+                }
+                else if (TryGetAttribute(line, Headers.MimeVersion, out val))
 				{
 					obj.MimeVersion = val;
 				}
@@ -218,6 +226,8 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
             e.From = h.From;
             e.To = h.To;
+            e.Cc = h.Cc;
+            e.Bcc = h.Bcc;
             e.Subject = h.Subject;
             e.HeaderJson = SerializeAsJson(h);
             e.CreatedOnUtc = DateTime.UtcNow;
