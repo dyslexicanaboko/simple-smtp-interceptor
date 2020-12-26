@@ -18,6 +18,12 @@ namespace SimpleSmtpInterceptor.Data.Entities
         public string To { get; set; }
 
         [DataMember]
+        public string Cc { get; set; }
+
+        [DataMember]
+        public string Bcc { get; set; }
+
+        [DataMember]
         public string Subject { get; set; }
 
         [DataMember]

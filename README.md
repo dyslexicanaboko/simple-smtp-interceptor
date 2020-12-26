@@ -8,6 +8,11 @@ A very simplistic, bare minimum, SMTP interceptor for capturing SMTP traffic. Wr
 - 02/02/2020
   - Basic support for attachments. Attachments were not the main focus of this project, but I didn't realize how they impact the composition of an email during serialization. Therefore to minimize transmission errors, I have implemented support for this. Regardless of the number of attachments, they will be compressed into a zip file and stored in the database.
   - Updated UI to only show the HTML version of a message. Text option is still available but not selected by default. Included a column for attachments count.
+- 12/25/2020
+  - Added support for CC and BCC
+  - According to what I have read for the SMTP RFC BCC was never something that supposed to be supported, so there is no standard way for SMTP servers to implement BCC. I can't guarantee what I did will be bug free, but I have tested it with my LinqPad script which is using System.Net.Mail. From what I can see System.Net.Mail does not issue an explicit command for BCC and only puts those email addresses in the stream using "RCPT TO". A deduction is performed to extrapolate BCC by subtracting all RCPT TO email addresses from the To and CC fields. What remains is assumed BCC.
+  - Updated database schema to include CC and BCC fields which are both nullable.
+  - Updated LinqPad script to LinqPad version 6 since this application already uses Dot Net Core.
 
 ## Why did you make another project for this when others exist?
 I was really tired of trying to find an SMTP development friendly server that I could host for everyone in my department to use for testing. I know of a few, but they don't work properly or some are just over the top with configuration. I wanted something straight forward and when I can't find it, I just build it myself.

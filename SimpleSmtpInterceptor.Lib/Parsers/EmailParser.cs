@@ -3,14 +3,18 @@ using SimpleSmtpInterceptor.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SimpleSmtpInterceptor.Lib.Parsers
 {
+    //This application assumes "TO" address will always be provided
     public abstract class EmailParser
         : CommonBase
 	{
+        private static readonly Regex ReWhiteSpace = new Regex(@"\s+");
+
         protected ParsedEmail ParsedEmail { get; } = new ParsedEmail();
 
 		protected readonly TextReader Reader;
@@ -59,7 +63,7 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
         /// <param name="reader">incoming email stream</param>
         /// <param name="verboseOutput">true prints out every line of the reader</param>
         /// <returns>Methodology to parse the remainder of the email</returns>
-		public static EmailParser GetEmailParser(TextReader reader, bool verboseOutput)
+		public static EmailParser GetEmailParser(TextReader reader, List<string> rcptTo, bool verboseOutput)
 		{
 			var obj = new Header();
 
@@ -89,9 +93,13 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 				}
 				else if (TryGetAttribute(line, Headers.To, out val))
 				{
-					obj.To = val;
+					obj.To = FormatEmailCsv(val);
 				}
-				else if (TryGetAttribute(line, Headers.MimeVersion, out val))
+                else if (TryGetAttribute(line, Headers.Cc, out val))
+                {
+                    obj.Cc = FormatEmailCsv(val);
+                }
+                else if (TryGetAttribute(line, Headers.MimeVersion, out val))
 				{
 					obj.MimeVersion = val;
 				}
@@ -124,22 +132,67 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
                 line = GetNextLine();
             }
 
-            if(parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
+            //Attempt to extract BCC
+            if (rcptTo.Any())
+            {
+                obj.Bcc = ResolveBccCsv(rcptTo, obj);
+            }
+            
+            if (parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
 
             parser.ParsedEmail.Header = obj;
 
             return parser;
         }
 
-        protected static bool TryGetAttribute(string text, string attribute, out string attributeValue)
+        private static string ResolveBccCsv(List<string> rcptTo, Header header)
         {
-            attributeValue = null;
+            var h = header;
 
-            if (!text.StartsWith(attribute)) return false;
+            var lstTo = GetEmailsAsList(h.To);
 
-            attributeValue = text.Substring(attribute.Length);
+            var lstCc = GetEmailsAsList(h.Cc);
 
-            return true;
+            var lstRemove = new List<string>(lstTo.Count + lstCc.Count);
+
+            //Combine the lists to loop once
+            lstRemove.AddRange(lstTo);
+            lstRemove.AddRange(lstCc);
+
+            //Remove the To and Cc address matches, what's left is BCC 
+            foreach (var e in lstRemove)
+            {
+                //This will only remove the first occurrence which
+                //will preserve duplicates on purpose
+                rcptTo.Remove(e);
+            }
+
+            if (!rcptTo.Any()) return null;
+
+            //Only take the remaining RCPT TO entries which is deduced to be BCC 
+            var bcc = string.Join(';', rcptTo);
+
+            return bcc;
+        }
+
+        private static List<string> GetEmailsAsList(string emailCsv)
+        {
+            if (string.IsNullOrWhiteSpace(emailCsv)) return new List<string>();
+
+            var lst = emailCsv
+                .Split(";")
+                .ToList();
+
+            return lst;
+        }
+
+        private static string FormatEmailCsv(string csv)
+        {
+            var str = csv.Replace(",", ";");
+
+            str = ReWhiteSpace.Replace(str, string.Empty);
+
+            return str;
         }
 
         protected static string TryGetCharSet(string contentType)
@@ -218,6 +271,8 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
 
             e.From = h.From;
             e.To = h.To;
+            e.Cc = h.Cc;
+            e.Bcc = h.Bcc;
             e.Subject = h.Subject;
             e.HeaderJson = SerializeAsJson(h);
             e.CreatedOnUtc = DateTime.UtcNow;

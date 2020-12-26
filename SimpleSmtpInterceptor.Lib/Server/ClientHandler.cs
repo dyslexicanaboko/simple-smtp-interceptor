@@ -4,6 +4,7 @@ using SimpleSmtpInterceptor.Lib.Exceptions;
 using SimpleSmtpInterceptor.Lib.Parsers;
 using SimpleSmtpInterceptor.Lib.Services;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 
@@ -32,6 +33,8 @@ namespace SimpleSmtpInterceptor.Lib.Server
         public void HandleRequest()
         {
             Email email = null;
+            
+            var lstRcptTo = new List<string>();
 
             using (var stream = _client.GetStream())
             {
@@ -52,12 +55,17 @@ namespace SimpleSmtpInterceptor.Lib.Server
                             {
                                 var line = ReadNextLine(reader);
 
+                                /* Each email address shows up one per line with "RCPT TO:" as a prefix 
+                                 * It's a mix of To, Cc and Bcc. Bcc doesn't have a dedicated prefix 
+                                 * so this is how I am dealing with it for now. */
+                                CollectRcptTo(lstRcptTo, line);
+                                
                                 switch (line)
                                 {
                                     case "DATA":
                                         writer.WriteLine("354 Start input, end data with <CRLF>.<CRLF>");
 
-                                        var parser = EmailParser.GetEmailParser(reader, _verboseOutput);
+                                        var parser = EmailParser.GetEmailParser(reader, lstRcptTo, _verboseOutput);
 
                                         if (parser == null)
                                         {
@@ -131,6 +139,18 @@ namespace SimpleSmtpInterceptor.Lib.Server
             }
         }
 
+        private void CollectRcptTo(List<string> rcptTo, string line)
+        {
+            if (!TryGetAttribute(line, Headers.RcptTo, out var emailAddress)) return;
+
+            //Remove angle brackets
+            var strEmail = emailAddress
+                .Replace("<", string.Empty)
+                .Replace(">", string.Empty);
+
+            rcptTo.Add(strEmail);
+        }
+
         private string ReadNextLine(TextReader reader)
         {
             var line = reader.ReadLine();
@@ -148,16 +168,26 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
                 var archiveSize = GetKiloBytes(email.AttachmentArchive);
 
-                Console.Write("Sent @ ");
+                Console.Write("Sent     @ ");
                 PrintTimeStamp();
                 Console.WriteLine();
 
-                Console.Write("Sent to : ");
+                Console.Write("Sent To  : ");
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine(email.To);
                 Console.ResetColor();
 
-                Console.Write("Subject : ");
+                Console.Write("Sent Cc  : ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(email.Cc);
+                Console.ResetColor();
+
+                Console.Write("Sent Bcc : ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(email.Bcc);
+                Console.ResetColor();
+
+                Console.Write("Subject  : ");
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine(email.Subject);
                 Console.ResetColor();
