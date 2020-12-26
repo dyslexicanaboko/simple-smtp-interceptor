@@ -135,15 +135,7 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             //Attempt to extract BCC
             if (rcptTo.Any())
             {
-                //Remove the To and Cc address matches as they will be in the list 
-                rcptTo.Remove(obj.To);
-                rcptTo.Remove(obj.Cc);
-
-                //Only take the remaining RCPT TO entry which is deduced to be BCC 
-                if (rcptTo.Count == 1)
-                {
-                    obj.Bcc = rcptTo[0];
-                }
+                obj.Bcc = ResolveBccCsv(rcptTo, obj);
             }
             
             if (parser == null) parser = new HeaderOnlyParser(reader, verboseOutput);
@@ -151,6 +143,47 @@ namespace SimpleSmtpInterceptor.Lib.Parsers
             parser.ParsedEmail.Header = obj;
 
             return parser;
+        }
+
+        private static string ResolveBccCsv(List<string> rcptTo, Header header)
+        {
+            var h = header;
+
+            var lstTo = GetEmailsAsList(h.To);
+
+            var lstCc = GetEmailsAsList(h.Cc);
+
+            var lstRemove = new List<string>(lstTo.Count + lstCc.Count);
+
+            //Combine the lists to loop once
+            lstRemove.AddRange(lstTo);
+            lstRemove.AddRange(lstCc);
+
+            //Remove the To and Cc address matches, what's left is BCC 
+            foreach (var e in lstRemove)
+            {
+                //This will only remove the first occurrence which
+                //will preserve duplicates on purpose
+                rcptTo.Remove(e);
+            }
+
+            if (!rcptTo.Any()) return null;
+
+            //Only take the remaining RCPT TO entries which is deduced to be BCC 
+            var bcc = string.Join(';', rcptTo);
+
+            return bcc;
+        }
+
+        private static List<string> GetEmailsAsList(string emailCsv)
+        {
+            if (string.IsNullOrWhiteSpace(emailCsv)) return new List<string>();
+
+            var lst = emailCsv
+                .Split(";")
+                .ToList();
+
+            return lst;
         }
 
         private static string FormatEmailCsv(string csv)

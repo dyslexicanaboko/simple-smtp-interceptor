@@ -168,16 +168,26 @@ namespace SimpleSmtpInterceptor.Lib.Server
 
                 var archiveSize = GetKiloBytes(email.AttachmentArchive);
 
-                Console.Write("Sent @ ");
+                Console.Write("Sent     @ ");
                 PrintTimeStamp();
                 Console.WriteLine();
 
-                Console.Write("Sent to : ");
+                Console.Write("Sent To  : ");
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine(email.To);
                 Console.ResetColor();
 
-                Console.Write("Subject : ");
+                Console.Write("Sent Cc  : ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(email.Cc);
+                Console.ResetColor();
+
+                Console.Write("Sent Bcc : ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(email.Bcc);
+                Console.ResetColor();
+
+                Console.Write("Subject  : ");
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine(email.Subject);
                 Console.ResetColor();

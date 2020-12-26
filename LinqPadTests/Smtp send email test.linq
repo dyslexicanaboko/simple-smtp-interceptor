@@ -10,18 +10,14 @@
 private static readonly Regex ReWhitespace = new Regex(@"\s+");
 
 //Open with LinqPad6 https://www.linqpad.net/
+//For the purposes of this application, TO field is always required
 void Main()
 {
 	//Send a single email
 	//SingleSend("fake@email.com");
 
 	//Send a single email with To, CC and BCC set
-	var e = new Email();
-	e.To = "To1@email.com;To2@email.com;To3@email.com";
-	e.Cc = null;
-	e.Bcc = "Bcc1@email.com;Bcc2@email.com;Bcc3@email.com";
-	//SingleSend(new Email());
-	SingleSend(e);
+	SingleSendBcc();
 
 	//Send a single email null message - no attachments
 	//SingleSend(new Email { Message = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>The HTML5 Herald</title><meta name=\"description\" content=\"The HTML5 Herald\"><meta name=\"author\" content=\"SitePoint\"><style type=\"html/css\">.p { color: black; }.span { border: black solid 1px; }.td { background-color: aqua;}</style></head><body><table style=\"border: black solid 2px;\"><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th></tr></thead><tbody><tr><td>1,1</td><td>1,2</td><td>1,3</td><td>1,4</td></tr><tr><td>2,1</td><td>2,2</td><td>2,3</td><td>2,4</td></tr><tr><td>3,1</td><td>3,2</td><td>3,3</td><td>3,4</td></tr><tr><td>4,1</td><td>4,2</td><td>4,3</td><td>4,4</td></tr></tbody></table></body></html>" } );
@@ -131,6 +127,17 @@ public void SingleSend(string addressTo, string subject = Email.StockSubject)
 	};
 	
 	SingleSend(obj);
+}
+
+public void SingleSendBcc()
+{
+	var e = new Email();
+	e.To = "To1@email.com;To2@email.com;To3@email.com";
+	e.Cc = null;
+	//e.Bcc = "To1@email.com;To2@email.com;To3@email.com";
+	e.Bcc = "Bcc1@email.com;Bcc2@email.com;Bcc3@email.com";
+	
+	SingleSend(e);
 }
 
 // Boiler plate send method simplified to TO address and optional subject
